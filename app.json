@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Cognia",
+    "slug": "cognia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "cognia",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ner.cognia"
+    },
+    "android": {
+      "package": "com.ner.cognia",
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM",
+        "POST_NOTIFICATIONS",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "color": "#0D9488"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F8FAFC",
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-web-browser",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

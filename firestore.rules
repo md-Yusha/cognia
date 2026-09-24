@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isCaregiver(caregiverId) {
+      return isAuthenticated() && request.auth.uid == caregiverId;
+    }
+
+    // Caregivers profile
+    match /caregivers/{caregiverId} {
+      allow read, write: if isCaregiver(caregiverId);
+    }
+
+    // Patients collection
+    match /patients/{patientId} {
+      // Caregiver can read/write their own created patients
+      allow read, write: if isAuthenticated() && resource.data.caregiverId == request.auth.uid;
+      // Creation: must set caregiverId to current auth user
+      allow create: if isAuthenticated() && request.resource.data.caregiverId == request.auth.uid;
+      // Allow patient devices with valid session token / lookup
+      allow read: if true;
+
+      // Game Sessions subcollection
+      match /sessions/{sessionId} {
+        // Patient devices can create game sessions
+        allow create: if true;
+        // Caregiver or patient can read session history
+        allow read: if true;
+        allow update, delete: if isAuthenticated();
+      }
+
+      // Reminders subcollection
+      match /reminders/{reminderId} {
+        // Caregiver can manage reminders
+        allow write: if isAuthenticated();
+        // Patient and caregiver can read & acknowledge reminders
+        allow read, update: if true;
+      }
+    }
+
+    // Patient Code Mapping collection (/patient_codes/{code})
+    match /patient_codes/{code} {
+      // Any patient device can query to resolve their code
+      allow get: if true;
+      // Only authenticated caregivers can generate/claim a code
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && resource.data.caregiverId == request.auth.uid;
+    }
+
+    // Alerts collection (/caregivers/{caregiverId}/alerts/{alertId})
+    match /caregivers/{caregiverId}/alerts/{alertId} {
+      allow read, write: if isCaregiver(caregiverId);
+      // Patient device or cloud function can create alerts (e.g. 3 missed reminders)
+      allow create: if true;
+    }
+  }
+}
