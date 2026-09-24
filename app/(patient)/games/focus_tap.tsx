@@ -19,7 +19,7 @@ interface TargetGridItem {
 export default function FocusTapGameScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { patient, recordGameSession, recentSessions, updateDifficultyTier } = usePatientStore();
+  const { patient, recordGameSession, updateDifficultyTier } = usePatientStore();
 
   const currentTier = patient?.difficultyLevels.focus_tap || 'easy';
   const totalRounds = currentTier === 'easy' ? 4 : currentTier === 'medium' ? 6 : 8;
@@ -114,7 +114,7 @@ export default function FocusTapGameScreen() {
       durationSeconds,
     });
 
-    const adaptResult = await calculateAdaptiveTier('focus_tap', currentTier, recentSessions);
+    const adaptResult = await calculateAdaptiveTier('focus_tap', currentTier, usePatientStore.getState().recentSessions);
     if (adaptResult.suggestedTier !== currentTier) {
       updateDifficultyTier('focus_tap', adaptResult.suggestedTier);
     }
@@ -133,7 +133,7 @@ export default function FocusTapGameScreen() {
         >
           <ArrowLeft size={16} color="#4A5568" />
           <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-xs"
+            className="text-[#4A5568] font-bold ml-1.5 text-lg"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Back
@@ -142,7 +142,7 @@ export default function FocusTapGameScreen() {
 
         <View className="bg-[#EDF6F8] border border-[#C4E3EB] px-3.5 py-1 rounded-full">
           <Text 
-            className="text-[#2C5E6E] text-xs font-bold uppercase tracking-wider"
+            className="text-[#2C5E6E] text-lg font-bold uppercase tracking-wider"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Round: {Math.min(currentRound + 1, totalRounds)} / {totalRounds}
@@ -168,7 +168,7 @@ export default function FocusTapGameScreen() {
           {t('game_focus')}
         </Text>
         <Text 
-          className="text-[#43798A] text-center text-sm font-semibold mt-1"
+          className="text-[#43798A] text-center text-xl font-semibold mt-1"
           style={{ fontFamily: 'Nunito-SemiBold' }}
         >
           Tap the fresh green tea leaf 🍃 when it appears in the garden.
@@ -197,7 +197,7 @@ export default function FocusTapGameScreen() {
             {t('well_done')}
           </Text>
           <Text 
-            className="text-[#64748B] text-base font-semibold mt-1"
+            className="text-[#64748B] text-xl font-semibold mt-1"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
             Found {hits} of {totalRounds} tea leaves accurately!
@@ -238,15 +238,11 @@ export default function FocusTapGameScreen() {
                   shadowRadius: 8,
                   elevation: 2,
                 }}
-                className={`w-[48%] h-40 rounded-[28px] border-2 items-center justify-center transition-all ${
-                  item.isTarget
-                    ? 'bg-[#EBF4EE] border-[#4A7C59]'
-                    : 'bg-white border-[#E8E2D8]'
-                }`}
+                className={item.isTarget ? 'w-[48%] h-40 rounded-[28px] border-2 items-center justify-center bg-[#EBF4EE] border-[#4A7C59]' : 'w-[48%] h-40 rounded-[28px] border-2 items-center justify-center bg-white border-[#E8E2D8]'}
               >
                 <Text className="text-5xl">{item.emoji}</Text>
                 <Text 
-                  className={`text-sm font-bold mt-2 ${item.isTarget ? 'text-[#2C503A]' : 'text-[#718096]'}`}
+                  className={`text-xl font-bold mt-2 ${item.isTarget ? 'text-[#2C503A]' : 'text-[#718096]'}`}
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   {item.isTarget ? 'Tea Leaf' : 'Butterfly'}

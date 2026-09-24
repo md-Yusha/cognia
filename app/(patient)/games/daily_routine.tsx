@@ -28,7 +28,7 @@ const ALL_ROUTINE_STEPS: RoutineStep[] = [
 export default function DailyRoutineGameScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { patient, recordGameSession, recentSessions, updateDifficultyTier } = usePatientStore();
+  const { patient, recordGameSession, updateDifficultyTier } = usePatientStore();
 
   const currentTier = patient?.difficultyLevels.daily_routine_recall || 'easy';
   const totalSteps = currentTier === 'easy' ? 3 : 4;
@@ -109,7 +109,7 @@ export default function DailyRoutineGameScreen() {
       durationSeconds,
     });
 
-    const adaptResult = await calculateAdaptiveTier('daily_routine_recall', currentTier, recentSessions);
+    const adaptResult = await calculateAdaptiveTier('daily_routine_recall', currentTier, usePatientStore.getState().recentSessions);
     if (adaptResult.suggestedTier !== currentTier) {
       updateDifficultyTier('daily_routine_recall', adaptResult.suggestedTier);
     }
@@ -128,7 +128,7 @@ export default function DailyRoutineGameScreen() {
         >
           <ArrowLeft size={16} color="#4A5568" />
           <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-xs"
+            className="text-[#4A5568] font-bold ml-1.5 text-lg"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Back
@@ -137,7 +137,7 @@ export default function DailyRoutineGameScreen() {
 
         <View className="bg-[#FDF3ED] border border-[#F4D8C9] px-3.5 py-1 rounded-full">
           <Text 
-            className="text-[#864127] text-xs font-bold uppercase tracking-wider"
+            className="text-[#864127] text-lg font-bold uppercase tracking-wider"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Level: {currentTier}
@@ -163,7 +163,7 @@ export default function DailyRoutineGameScreen() {
           {t('game_routine')}
         </Text>
         <Text 
-          className="text-[#A95838] text-center text-sm font-semibold mt-1"
+          className="text-[#A95838] text-center text-xl font-semibold mt-1"
           style={{ fontFamily: 'Nunito-SemiBold' }}
         >
           Arrange your routine cards in morning to afternoon order.
@@ -173,7 +173,7 @@ export default function DailyRoutineGameScreen() {
       {/* Target Schedule List */}
       <View className="mb-6">
         <Text 
-          className="text-2xl text-[#2B3A30] mb-3"
+          className="text-3xl text-[#2B3A30] mb-3"
           style={{ fontFamily: 'PatrickHand' }}
         >
           Your Ordered Schedule:
@@ -184,20 +184,16 @@ export default function DailyRoutineGameScreen() {
             return (
               <View
                 key={idx}
-                className={`p-4 rounded-[26px] border-2 flex-row items-center min-h-[72px] ${
-                  step
-                    ? 'bg-white border-[#F4D8C9] shadow-sm'
-                    : 'bg-[#F8F6F2] border-dashed border-[#DFD8CC]'
-                }`}
+                className={step ? 'p-4 rounded-[26px] border-2 flex-row items-center min-h-[72px] bg-white border-[#F4D8C9]' : 'p-4 rounded-[26px] border-2 flex-row items-center min-h-[72px] bg-[#F8F6F2] border-[#DFD8CC]'}
               >
                 <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${step ? 'bg-[#C87453]' : 'bg-[#EAE4D8]'}`}>
-                  <Text className="text-white font-bold text-sm">{idx + 1}</Text>
+                  <Text className="text-white font-bold text-xl">{idx + 1}</Text>
                 </View>
                 {step ? (
                   <View className="flex-row items-center flex-1">
-                    <Text className="text-3xl mr-3">{step.emoji}</Text>
+                    <Text className="text-4xl mr-3">{step.emoji}</Text>
                     <Text 
-                      className="text-[#2D3748] text-base font-bold flex-1"
+                      className="text-[#2D3748] text-xl font-bold flex-1"
                       style={{ fontFamily: 'Nunito-Bold' }}
                     >
                       {step.title}
@@ -205,7 +201,7 @@ export default function DailyRoutineGameScreen() {
                   </View>
                 ) : (
                   <Text 
-                    className="text-[#A0AEC0] text-sm font-semibold"
+                    className="text-[#A0AEC0] text-xl font-semibold"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     Tap a card below to place step {idx + 1}
@@ -233,13 +229,13 @@ export default function DailyRoutineGameScreen() {
             <Trophy size={40} color={isCorrect ? '#59936E' : '#C87453'} />
           </View>
           <Text 
-            className="text-3xl text-[#2B3A30] mt-2 text-center"
+            className="text-4xl text-[#2B3A30] mt-2 text-center"
             style={{ fontFamily: 'PatrickHand' }}
           >
             {isCorrect ? t('well_done') : t('try_again')}
           </Text>
           <Text 
-            className="text-[#64748B] text-sm text-center mt-1"
+            className="text-[#64748B] text-xl text-center mt-1"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
             {isCorrect ? 'You remembered your daily order accurately!' : 'Morning tea comes first, followed by medicine.'}
@@ -268,7 +264,7 @@ export default function DailyRoutineGameScreen() {
       ) : (
         <View className="mb-6">
           <Text 
-            className="text-2xl text-[#2B3A30] mb-3"
+            className="text-3xl text-[#2B3A30] mb-3"
             style={{ fontFamily: 'PatrickHand' }}
           >
             Available Cards (Tap in order):
@@ -284,13 +280,13 @@ export default function DailyRoutineGameScreen() {
                 <Text className="text-4xl mr-3">{step.emoji}</Text>
                 <View className="flex-1">
                   <Text 
-                    className="text-[#2D3748] text-base font-bold"
+                    className="text-[#2D3748] text-xl font-bold"
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     {step.title}
                   </Text>
                   <Text 
-                    className="text-[#718096] text-xs font-semibold mt-0.5"
+                    className="text-[#718096] text-lg font-semibold mt-0.5"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     {step.hint}

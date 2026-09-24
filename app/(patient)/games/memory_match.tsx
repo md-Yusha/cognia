@@ -31,7 +31,7 @@ const REGIONAL_PAIRS = [
 export default function MemoryMatchGameScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { patient, recordGameSession, recentSessions, updateDifficultyTier } = usePatientStore();
+  const { patient, recordGameSession, updateDifficultyTier } = usePatientStore();
 
   const currentTier = patient?.difficultyLevels.memory_match || 'easy';
   const pairCount = currentTier === 'easy' ? 2 : currentTier === 'medium' ? 3 : 4;
@@ -47,6 +47,7 @@ export default function MemoryMatchGameScreen() {
   const mismatchesRef = useRef(0);
   const reactionTimesRef = useRef<number[]>([]);
   const lastFlipTimeRef = useRef<number>(0);
+  const matchedRef = useRef(0);
 
   const initGame = () => {
     const selected = REGIONAL_PAIRS.slice(0, pairCount);
@@ -67,6 +68,7 @@ export default function MemoryMatchGameScreen() {
     lastFlipTimeRef.current = Date.now();
     flipsRef.current = 0;
     mismatchesRef.current = 0;
+    matchedRef.current = 0;
     reactionTimesRef.current = [];
 
     speakPrompt('Find the matching pairs. Tap a card to turn it over.', (i18n.language || 'en') as any);
@@ -108,10 +110,10 @@ export default function MemoryMatchGameScreen() {
           newCards[secondIdx].isMatched = true;
           setCards([...newCards]);
           setSelectedCards([]);
-          const newMatched = matchedPairs + 1;
-          setMatchedPairs(newMatched);
+          matchedRef.current += 1;
+          setMatchedPairs(matchedRef.current);
 
-          if (newMatched === pairCount) {
+          if (matchedRef.current === pairCount) {
             handleGameOver();
           }
         }, 400);
@@ -150,7 +152,7 @@ export default function MemoryMatchGameScreen() {
       durationSeconds,
     });
 
-    const adaptResult = await calculateAdaptiveTier('memory_match', currentTier, recentSessions);
+    const adaptResult = await calculateAdaptiveTier('memory_match', currentTier, usePatientStore.getState().recentSessions);
     if (adaptResult.suggestedTier !== currentTier) {
       updateDifficultyTier('memory_match', adaptResult.suggestedTier);
     }
@@ -169,7 +171,7 @@ export default function MemoryMatchGameScreen() {
         >
           <ArrowLeft size={16} color="#4A5568" />
           <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-xs"
+            className="text-[#4A5568] font-bold ml-1.5 text-lg"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Back
@@ -178,7 +180,7 @@ export default function MemoryMatchGameScreen() {
 
         <View className="bg-[#EBF4EE] border border-[#CDE3D5] px-3.5 py-1 rounded-full">
           <Text 
-            className="text-[#2C503A] text-xs font-bold uppercase tracking-wider"
+            className="text-[#2C503A] text-lg font-bold uppercase tracking-wider"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Level: {currentTier}
@@ -204,7 +206,7 @@ export default function MemoryMatchGameScreen() {
           {t('game_memory')}
         </Text>
         <Text 
-          className="text-[#4A7C59] text-center text-sm font-semibold mt-1"
+          className="text-[#4A7C59] text-center text-xl font-semibold mt-1"
           style={{ fontFamily: 'Nunito-SemiBold' }}
         >
           Find matching picture pairs of Assam heritage & wildlife.
@@ -233,7 +235,7 @@ export default function MemoryMatchGameScreen() {
             {t('well_done')}
           </Text>
           <Text 
-            className="text-[#597362] text-base font-semibold mt-1"
+            className="text-[#597362] text-xl font-semibold mt-1"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
             Solved in {moves} moves!
@@ -274,19 +276,13 @@ export default function MemoryMatchGameScreen() {
                 shadowRadius: 10,
                 elevation: 2,
               }}
-              className={`w-[48%] h-40 rounded-[28px] border-2 items-center justify-center transition-all ${
-                card.isMatched
-                  ? 'bg-[#EBF4EE] border-[#4A7C59]'
-                  : card.isFlipped
-                  ? 'bg-white border-[#4A7C59]'
-                  : 'bg-white border-[#E8E2D8]'
-              }`}
+              className={card.isMatched ? 'w-[48%] h-40 rounded-[28px] border-2 items-center justify-center bg-[#EBF4EE] border-[#4A7C59]' : card.isFlipped ? 'w-[48%] h-40 rounded-[28px] border-2 items-center justify-center bg-white border-[#4A7C59]' : 'w-[48%] h-40 rounded-[28px] border-2 items-center justify-center bg-white border-[#E8E2D8]'}
             >
               {card.isFlipped || card.isMatched ? (
                 <View className="items-center">
                   <Text className="text-5xl">{card.emoji}</Text>
                   <Text 
-                    className="text-[#2C503A] text-lg mt-2 font-bold"
+                    className="text-[#2C503A] text-xl mt-2 font-bold"
                     style={{ fontFamily: 'PatrickHand' }}
                   >
                     {card.label}
@@ -295,10 +291,10 @@ export default function MemoryMatchGameScreen() {
               ) : (
                 <View className="items-center">
                   <View className="w-14 h-14 rounded-full bg-[#FAF7F2] border border-[#E8E2D8] items-center justify-center">
-                    <Text className="text-2xl font-bold text-[#8C8274]">?</Text>
+                    <Text className="text-3xl font-bold text-[#8C8274]">?</Text>
                   </View>
                   <Text 
-                    className="text-[#8C8274] text-xs font-bold mt-2"
+                    className="text-[#8C8274] text-lg font-bold mt-2"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     Tap to Turn

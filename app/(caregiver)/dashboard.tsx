@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Alert, Vibration } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -19,6 +19,7 @@ import { useCaregiverStore } from '../../src/store/useCaregiverStore';
 import { registerPatientCode } from '../../src/services/codeService';
 import { signOutCaregiver } from '../../src/services/authService';
 import { PatientProfile } from '../../src/types';
+import { fetchStressAlerts } from '../../src/services/careApi';
 
 export default function CaregiverDashboardScreen() {
   const router = useRouter();
@@ -39,6 +40,23 @@ export default function CaregiverDashboardScreen() {
   const [patientLang, setPatientLang] = useState<'en' | 'as' | 'kha' | 'bn'>('as');
   const [createdCode, setCreatedCode] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [houseAlert, setHouseAlert] = useState('');
+
+  useEffect(() => {
+    let since = Date.now() - 15000;
+    const id = setInterval(async () => {
+      try {
+        const alerts = await fetchStressAlerts(since);
+        if (alerts.length) {
+          since = Date.now();
+          const latest = alerts[0];
+          setHouseAlert(`${latest.reasons || 'Stress signal'} from the patient phone.`);
+          Vibration.vibrate([0, 400, 200, 400, 200, 800]);
+        }
+      } catch {}
+    }, 8000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleCreatePatient = async () => {
     if (!patientName.trim()) {
@@ -101,21 +119,21 @@ export default function CaregiverDashboardScreen() {
         <View>
           <View className="bg-[#EBF4EE] border border-[#CDE3D5] px-3 py-0.5 rounded-full self-start mb-1">
             <Text 
-              className="text-[#2C503A] text-xs font-bold"
+              className="text-[#2C503A] text-lg font-bold"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               Family & Healthcare Portal
             </Text>
           </View>
           <Text 
-            className="text-3xl text-[#2B3A30]"
+            className="text-4xl text-[#2B3A30]"
             style={{ fontFamily: 'PatrickHand' }}
           >
             {caregiver?.name ? `Hello, ${caregiver.name}` : 'Caregiver Dashboard'}
           </Text>
           {caregiver?.email ? (
             <Text 
-              className="text-[#64748B] text-xs font-semibold"
+              className="text-[#64748B] text-lg font-semibold"
               style={{ fontFamily: 'Nunito-SemiBold' }}
             >
               {caregiver.email}
@@ -131,6 +149,12 @@ export default function CaregiverDashboardScreen() {
         </TouchableOpacity>
       </View>
 
+      {houseAlert ? (
+        <View className="bg-[#FDF3ED] border border-[#F4D8C9] rounded-3xl p-4 mb-4">
+          <Text className="text-[#8A4226] text-xl" style={{ fontFamily: 'Nunito-Bold' }}>{houseAlert}</Text>
+        </View>
+      ) : null}
+
       {/* Metrics Banner */}
       <View className="flex-row gap-3 mb-6">
         <View 
@@ -145,7 +169,7 @@ export default function CaregiverDashboardScreen() {
         >
           <View className="flex-row items-center justify-between mb-1">
             <Text 
-              className="text-[#3D6C4E] text-xs font-bold uppercase tracking-wider"
+              className="text-[#3D6C4E] text-lg font-bold uppercase tracking-wider"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               Patients
@@ -153,7 +177,7 @@ export default function CaregiverDashboardScreen() {
             <Users size={16} color="#4A7C59" />
           </View>
           <Text 
-            className="text-3xl text-[#2C503A] mt-1"
+            className="text-4xl text-[#2C503A] mt-1"
             style={{ fontFamily: 'PatrickHand' }}
           >
             {patients.length} Active
@@ -172,7 +196,7 @@ export default function CaregiverDashboardScreen() {
         >
           <View className="flex-row items-center justify-between mb-1">
             <Text 
-              className="text-[#864127] text-xs font-bold uppercase tracking-wider"
+              className="text-[#864127] text-lg font-bold uppercase tracking-wider"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               Alerts
@@ -180,7 +204,7 @@ export default function CaregiverDashboardScreen() {
             <AlertTriangle size={16} color="#C87453" />
           </View>
           <Text 
-            className="text-3xl text-[#864127] mt-1"
+            className="text-4xl text-[#864127] mt-1"
             style={{ fontFamily: 'PatrickHand' }}
           >
             {alerts.filter((a) => !a.isRead).length} Unread
@@ -192,7 +216,7 @@ export default function CaregiverDashboardScreen() {
       {alerts.length > 0 && (
         <View className="mb-6">
           <Text 
-            className="text-2xl text-[#2B3A30] mb-3"
+            className="text-3xl text-[#2B3A30] mb-3"
             style={{ fontFamily: 'PatrickHand' }}
           >
             🔔 Patient Care Updates
@@ -202,28 +226,32 @@ export default function CaregiverDashboardScreen() {
               <TouchableOpacity
                 key={alert.id}
                 onPress={() => markAlertRead(alert.id)}
-                className={`p-4 rounded-3xl border shadow-sm ${
+                className={
                   alert.severity === 'warning'
-                    ? 'bg-[#FDF3ED] border-[#F4D8C9]'
-                    : 'bg-[#EBF4EE] border-[#CDE3D5]'
-                } ${alert.isRead ? 'opacity-60' : 'opacity-100'}`}
+                    ? alert.isRead
+                      ? 'p-4 rounded-3xl border bg-[#FDF3ED] border-[#F4D8C9] opacity-60'
+                      : 'p-4 rounded-3xl border bg-[#FDF3ED] border-[#F4D8C9]'
+                    : alert.isRead
+                      ? 'p-4 rounded-3xl border bg-[#EBF4EE] border-[#CDE3D5] opacity-60'
+                      : 'p-4 rounded-3xl border bg-[#EBF4EE] border-[#CDE3D5]'
+                }
               >
                 <View className="flex-row items-center justify-between mb-1">
                   <Text 
-                    className="text-[#2D3748] font-bold text-base"
+                    className="text-[#2D3748] font-bold text-xl"
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     {alert.patientName}
                   </Text>
                   <Text 
-                    className="text-[#718096] text-xs"
+                    className="text-[#718096] text-lg"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </Text>
                 </View>
                 <Text 
-                  className="text-[#4A5568] text-sm"
+                  className="text-[#4A5568] text-xl"
                   style={{ fontFamily: 'Nunito-SemiBold' }}
                 >
                   {alert.message}
@@ -237,7 +265,7 @@ export default function CaregiverDashboardScreen() {
       {/* Registered Patients Header */}
       <View className="flex-row items-center justify-between mb-3">
         <Text 
-          className="text-2xl text-[#2B3A30]"
+          className="text-3xl text-[#2B3A30]"
           style={{ fontFamily: 'PatrickHand' }}
         >
           Registered Patients
@@ -253,7 +281,7 @@ export default function CaregiverDashboardScreen() {
         >
           <UserPlus size={16} color="#FFFFFF" />
           <Text 
-            className="text-white font-bold text-xs ml-1.5"
+            className="text-white font-bold text-lg ml-1.5"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Add Patient
@@ -277,13 +305,13 @@ export default function CaregiverDashboardScreen() {
               <Users size={28} color="#3D6C4E" />
             </View>
             <Text 
-              className="text-2xl text-[#2B3A30] text-center"
+              className="text-3xl text-[#2B3A30] text-center"
               style={{ fontFamily: 'PatrickHand' }}
             >
               No Patients Added Yet
             </Text>
             <Text 
-              className="text-[#64748B] text-center text-sm mt-1 mb-5 max-w-xs"
+              className="text-[#64748B] text-center text-xl mt-1 mb-5 max-w-xs"
               style={{ fontFamily: 'Nunito-SemiBold' }}
             >
               Tap 'Add Patient' to create a memorable entry code for your family member, or load sample records to test the dashboard.
@@ -301,7 +329,7 @@ export default function CaregiverDashboardScreen() {
               >
                 <UserPlus size={16} color="#FFFFFF" />
                 <Text 
-                  className="text-white font-bold text-xs ml-1.5"
+                  className="text-white font-bold text-lg ml-1.5"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Add Patient
@@ -316,7 +344,7 @@ export default function CaregiverDashboardScreen() {
               >
                 <Sparkles size={16} color="#675283" />
                 <Text 
-                  className="text-[#675283] font-bold text-xs ml-1.5"
+                  className="text-[#675283] font-bold text-lg ml-1.5"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Load Demo Data
@@ -335,14 +363,20 @@ export default function CaregiverDashboardScreen() {
               <View className="flex-1">
                 <View className="flex-row items-center">
                   <Text 
-                    className="text-[#2D3748] font-bold text-lg"
+                    className="text-[#2D3748] font-bold text-xl"
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     {p.name}
                   </Text>
+                  <TouchableOpacity
+                    onPress={() => router.push(`/(caregiver)/chat/${p.id}`)}
+                    className="bg-[#EBF4EE] px-3 py-2 rounded-full ml-2"
+                  >
+                    <Text className="text-[#2C503A] text-xl" style={{ fontFamily: 'Nunito-Bold' }}>Chat</Text>
+                  </TouchableOpacity>
                   <View className="bg-[#EBF4EE] border border-[#CDE3D5] px-2.5 py-0.5 rounded-full ml-2">
                     <Text 
-                      className="text-[#2C503A] text-xs font-bold uppercase"
+                      className="text-[#2C503A] text-lg font-bold uppercase"
                       style={{ fontFamily: 'Nunito-Bold' }}
                     >
                       {p.preferredLanguage}
@@ -354,14 +388,14 @@ export default function CaregiverDashboardScreen() {
                   <View className="flex-row items-center bg-[#FDF3ED] border border-[#F4D8C9] px-2.5 py-0.5 rounded-full mr-3">
                     <KeyRound size={12} color="#C87453" />
                     <Text 
-                      className="text-[#C87453] font-black text-xs ml-1 tracking-wider"
+                      className="text-[#C87453] font-black text-lg ml-1 tracking-wider"
                       style={{ fontFamily: 'Nunito-Bold' }}
                     >
                       {p.accessCode}
                     </Text>
                   </View>
                   <Text 
-                    className="text-[#718096] text-xs font-semibold"
+                    className="text-[#718096] text-lg font-semibold"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     Age: {p.age || 70}
@@ -381,7 +415,7 @@ export default function CaregiverDashboardScreen() {
           <View className="bg-[#FAF8F5] border-t border-[#E8E2D8] p-6 rounded-t-3xl max-h-[90%]">
             <View className="flex-row items-center justify-between mb-4">
               <Text 
-                className="text-2xl text-[#2B3A30]"
+                className="text-3xl text-[#2B3A30]"
                 style={{ fontFamily: 'PatrickHand' }}
               >
                 {createdCode ? '🎉 Code Created!' : 'Register Patient'}
@@ -394,7 +428,7 @@ export default function CaregiverDashboardScreen() {
             {createdCode ? (
               <View className="items-center py-3">
                 <Text 
-                  className="text-[#4A5568] text-center text-sm mb-3 font-semibold"
+                  className="text-[#4A5568] text-center text-xl mb-3 font-semibold"
                   style={{ fontFamily: 'Nunito-SemiBold' }}
                 >
                   Share this code with {patientName}. They can enter it on the opening screen to jump straight into their personalized brain games.
@@ -402,7 +436,7 @@ export default function CaregiverDashboardScreen() {
 
                 <View className="bg-white border-2 border-[#CDE3D5] p-5 rounded-3xl items-center w-full my-3 shadow-sm">
                   <Text 
-                    className="text-[#4A7C59] text-xs font-bold uppercase tracking-wider"
+                    className="text-[#4A7C59] text-lg font-bold uppercase tracking-wider"
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     Patient Entry Code
@@ -426,7 +460,7 @@ export default function CaregiverDashboardScreen() {
             ) : (
               <View>
                 <Text 
-                  className="text-[#4A5568] text-xs font-bold mb-1"
+                  className="text-[#4A5568] text-lg font-bold mb-1"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Patient Full Name
@@ -437,11 +471,11 @@ export default function CaregiverDashboardScreen() {
                   placeholder="e.g. Biren Gogoi"
                   placeholderTextColor="#A0AEC0"
                   style={{ fontFamily: 'Nunito-SemiBold' }}
-                  className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-3 text-base"
+                  className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-3 text-xl"
                 />
 
                 <Text 
-                  className="text-[#4A5568] text-xs font-bold mb-1"
+                  className="text-[#4A5568] text-lg font-bold mb-1"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Age
@@ -453,11 +487,11 @@ export default function CaregiverDashboardScreen() {
                   placeholderTextColor="#A0AEC0"
                   keyboardType="numeric"
                   style={{ fontFamily: 'Nunito-SemiBold' }}
-                  className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-3 text-base"
+                  className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-3 text-xl"
                 />
 
                 <Text 
-                  className="text-[#4A5568] text-xs font-bold mb-2"
+                  className="text-[#4A5568] text-lg font-bold mb-2"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Preferred Language
@@ -472,12 +506,10 @@ export default function CaregiverDashboardScreen() {
                     <TouchableOpacity
                       key={l.code}
                       onPress={() => setPatientLang(l.code as any)}
-                      className={`flex-1 py-2.5 rounded-2xl border items-center ${
-                        patientLang === l.code ? 'bg-[#4A7C59] border-[#3D6C4E]' : 'bg-white border-[#E2DDD3]'
-                      }`}
+                      className={patientLang === l.code ? 'flex-1 py-2.5 rounded-2xl border items-center bg-[#4A7C59] border-[#3D6C4E]' : 'flex-1 py-2.5 rounded-2xl border items-center bg-white border-[#E2DDD3]'}
                     >
                       <Text 
-                        className={`text-xs ${patientLang === l.code ? 'text-white font-bold' : 'text-[#718096]'}`}
+                        className={`text-lg ${patientLang === l.code ? 'text-white font-bold' : 'text-[#718096]'}`}
                         style={{ fontFamily: 'Nunito-Bold' }}
                       >
                         {l.label}

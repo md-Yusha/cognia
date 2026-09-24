@@ -1,37 +1,38 @@
+import { Platform } from 'react-native';
 import * as Speech from 'expo-speech';
 import { LanguageCode } from '../types';
 
-const LANGUAGE_VOICE_MAP: Record<LanguageCode, string> = {
-  en: 'en-IN',
-  as: 'as-IN',
-  kha: 'en-IN', // Khasi fallback with gentle cadence
-  bn: 'bn-IN',
-};
+let audioReady = false;
 
-/**
- * Speaks text using local offline TTS with elderly-friendly slow pacing and clear articulation
- */
-export async function speakPrompt(text: string, language: LanguageCode = 'en'): Promise<void> {
+async function prepareAudio() {
+  if (audioReady) return;
   try {
-    const isSpeaking = await Speech.isSpeakingAsync();
-    if (isSpeaking) {
-      await Speech.stop();
-    }
-
-    const voiceCode = LANGUAGE_VOICE_MAP[language] || 'en-IN';
-
-    Speech.speak(text, {
-      language: voiceCode,
-      rate: 0.82, // Slower rate tailored for dementia patients and elderly listeners
-      pitch: 1.0,
+    const { Audio } = await import('expo-av');
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+      playThroughEarpieceAndroid: false,
+      staysActiveInBackground: false,
     });
-  } catch (error) {
-    console.warn('TTS playback issue (browser/device fallback):', error);
-  }
+    audioReady = true;
+  } catch {}
+}
+
+export async function speakPrompt(text: string, _language: LanguageCode = 'en'): Promise<void> {
+  if (!text.trim()) return;
+  await prepareAudio();
+  try {
+    Speech.stop();
+  } catch {}
+  Speech.speak(text, {
+    language: Platform.OS === 'ios' ? 'en-US' : 'en-IN',
+    rate: 0.85,
+    pitch: 1,
+  });
 }
 
 export async function stopSpeech(): Promise<void> {
   try {
-    await Speech.stop();
+    Speech.stop();
   } catch {}
 }

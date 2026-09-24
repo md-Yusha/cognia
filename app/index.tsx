@@ -133,6 +133,7 @@ export default function LaunchScreen() {
       style={{ flex: 1, backgroundColor: '#FAF7F2' }}
     >
       <ScrollView
+        automaticallyAdjustKeyboardInsets
         contentContainerStyle={{ 
           flexGrow: 1, 
           paddingHorizontal: 22, 
@@ -143,22 +144,8 @@ export default function LaunchScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Top Header */}
-        <View className="flex-row items-center justify-between pt-6 mb-2">
+        <View className="pt-6 mb-2">
           <OfflineBadge />
-          
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleCaregiverNav}
-            className="flex-row items-center bg-white border border-[#E8E2D8] px-4 py-2 rounded-full shadow-sm"
-          >
-            <ShieldCheck size={16} color="#3D6C4E" />
-            <Text 
-              className="text-[#2C503A] font-bold text-xs ml-1.5"
-              style={{ fontFamily: 'Nunito-Bold' }}
-            >
-              {caregiver ? 'Caregiver Dashboard ✓' : 'Caregiver Portal'}
-            </Text>
-          </TouchableOpacity>
         </View>
 
         {/* Hero Branding */}
@@ -185,7 +172,7 @@ export default function LaunchScreen() {
           </Text>
 
           <Text 
-            className="text-[#4A7C59] text-center text-base font-semibold mt-1 max-w-xs"
+            className="text-[#4A7C59] text-center text-xl font-semibold mt-1 max-w-xs"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
             Gentle memory & cognitive exercises for North East India
@@ -212,17 +199,17 @@ export default function LaunchScreen() {
             >
               <View className="flex-row items-center flex-1 mr-3">
                 <View className="w-12 h-12 bg-white rounded-full items-center justify-center mr-3 border border-[#F4D8C9]">
-                  <Text className="text-2xl">🌸</Text>
+                  <Text className="text-3xl">🌸</Text>
                 </View>
                 <View className="flex-1">
                   <Text 
-                    className="text-[#8A4226] text-xs font-bold uppercase tracking-wider"
+                    className="text-[#8A4226] text-lg font-bold uppercase tracking-wider"
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     Welcome Back
                   </Text>
                   <Text 
-                    className="text-2xl text-[#2D3748]"
+                    className="text-3xl text-[#2D3748]"
                     style={{ fontFamily: 'PatrickHand' }}
                   >
                     {savedPatient.name}
@@ -232,7 +219,7 @@ export default function LaunchScreen() {
 
               <View className="bg-[#C87453] px-4 py-2.5 rounded-full flex-row items-center">
                 <Text 
-                  className="text-white text-xs font-bold mr-1"
+                  className="text-white text-lg font-bold mr-1"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Continue
@@ -256,20 +243,20 @@ export default function LaunchScreen() {
             <View className="items-center mb-4">
               <View className="bg-[#EBF4EE] px-3.5 py-1 rounded-full mb-2 border border-[#CDE3D5]">
                 <Text 
-                  className="text-[#2C503A] text-xs font-bold"
+                  className="text-[#2C503A] text-lg font-bold"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Daily Brain Exercise
                 </Text>
               </View>
               <Text 
-                className="text-3xl text-[#2B3A30] text-center"
+                className="text-4xl text-[#2B3A30] text-center"
                 style={{ fontFamily: 'PatrickHand' }}
               >
                 Today's Calming Journey
               </Text>
               <Text 
-                className="text-[#597362] text-center text-sm mt-1 px-2"
+                className="text-[#597362] text-center text-xl mt-1 px-2"
                 style={{ fontFamily: 'Nunito-SemiBold' }}
               >
                 No password required. Tap below to start today's relaxing memory activities.
@@ -296,7 +283,7 @@ export default function LaunchScreen() {
             >
               <KeyRound size={16} color="#8A4226" />
               <Text 
-                className="text-[#8A4226] text-sm font-bold ml-2"
+                className="text-[#8A4226] text-xl font-bold ml-2"
                 style={{ fontFamily: 'Nunito-Bold' }}
               >
                 Have a family code? Tap to enter
@@ -313,10 +300,26 @@ export default function LaunchScreen() {
           </View>
         </View>
 
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleCaregiverNav}
+          className="w-full bg-white border border-[#CDE3D5] rounded-[28px] px-5 py-5 mt-4 flex-row items-center"
+        >
+          <ShieldCheck size={28} color="#3D6C4E" />
+          <View className="flex-1 ml-3">
+            <Text className="text-[#2C503A] text-3xl" style={{ fontFamily: 'PatrickHand' }}>
+              {caregiver ? 'Open caregiver home' : 'Caregiver portal'}
+            </Text>
+            <Text className="text-[#597362] text-xl" style={{ fontFamily: 'Nunito-SemiBold' }}>
+              Family helpers sign in here. This is not the patient start button.
+            </Text>
+          </View>
+        </TouchableOpacity>
+
         {/* Footer */}
         <View className="items-center pt-3">
           <Text 
-            className="text-[#8C8274] text-xs text-center"
+            className="text-[#8C8274] text-lg text-center"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
             Assam • Meghalaya • Manipur • Tripura • Nagaland • Mizoram • Arunachal • Sikkim
@@ -326,18 +329,19 @@ export default function LaunchScreen() {
 
       {/* Access Code Entry Modal */}
       <Modal visible={isCodeModalOpen} transparent animationType="slide">
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <View className="flex-1 bg-black/40 justify-end">
           <View className="bg-[#FAF7F2] border-t border-[#E8E2D8] p-6 rounded-t-[32px] max-h-[85%]">
             <View className="flex-row items-center justify-between mb-4">
               <View>
                 <Text 
-                  className="text-3xl text-[#2B3A30]"
+                  className="text-4xl text-[#2B3A30]"
                   style={{ fontFamily: 'PatrickHand' }}
                 >
                   Enter Access Code
                 </Text>
                 <Text 
-                  className="text-[#597362] text-xs font-semibold mt-0.5"
+                  className="text-[#597362] text-lg font-semibold mt-0.5"
                   style={{ fontFamily: 'Nunito-SemiBold' }}
                 >
                   Provided by your doctor or family caregiver
@@ -366,7 +370,7 @@ export default function LaunchScreen() {
                   fontFamily: 'Nunito-Bold',
                   letterSpacing: 4,
                 }}
-                className="bg-[#FAF7F2] border-2 border-[#C2DEC8] text-[#2C503A] rounded-2xl px-5 py-4 text-center text-3xl font-black min-h-[68px]"
+                className="bg-[#FAF7F2] border-2 border-[#C2DEC8] text-[#2C503A] rounded-2xl px-5 py-4 text-center text-4xl font-black min-h-[68px]"
                 accessibilityLabel="Access Code Input"
               />
 
@@ -374,7 +378,7 @@ export default function LaunchScreen() {
                 <View className="flex-row items-center bg-[#FDF2F2] border border-[#F8D7D7] p-3 rounded-2xl mt-3">
                   <AlertCircle size={16} color="#C53030" />
                   <Text 
-                    className="text-[#9B2C2C] text-xs font-bold ml-2 flex-1"
+                    className="text-[#9B2C2C] text-lg font-bold ml-2 flex-1"
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     {errorMessage}
@@ -399,6 +403,7 @@ export default function LaunchScreen() {
             </View>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     </KeyboardAvoidingView>
   );

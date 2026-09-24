@@ -29,9 +29,9 @@ export function mapFirebaseUserToCaregiver(user: User): CaregiverProfile {
   return {
     uid: user.uid,
     name: user.displayName || user.email?.split('@')[0] || 'Caregiver',
-    email: user.email || undefined,
-    phone: user.phoneNumber || undefined,
-    photoURL: user.photoURL || undefined,
+    email: user.email || '',
+    phone: user.phoneNumber || '',
+    photoURL: user.photoURL || '',
     createdAt: Date.now(),
     patientIds: [],
   };
@@ -44,10 +44,14 @@ export async function syncCaregiverToFirestore(caregiver: CaregiverProfile): Pro
   try {
     const docRef = doc(db, 'caregivers', caregiver.uid);
     const existing = await getDoc(docRef);
+    const payload = Object.fromEntries(
+      Object.entries(caregiver).filter(([, value]) => value !== undefined && value !== '')
+    );
     if (!existing.exists()) {
-      await setDoc(docRef, caregiver);
+      await setDoc(docRef, payload);
     } else {
-      await setDoc(docRef, { ...existing.data(), ...caregiver }, { merge: true });
+      const { patientIds: _ids, createdAt: _created, ...rest } = payload;
+      await setDoc(docRef, rest, { merge: true });
     }
   } catch (err) {
     console.warn('Caregiver profile Firestore sync (queued offline):', err);

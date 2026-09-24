@@ -26,7 +26,7 @@ export const LanguageSelector: React.FC = () => {
   return (
     <View className="my-2 items-center">
       <Text 
-        className="text-[#5D5548] text-xs font-bold uppercase tracking-wider mb-2.5"
+        className="text-[#5D5548] text-lg font-bold uppercase tracking-wider mb-2.5"
         style={{ fontFamily: 'Nunito-SemiBold' }}
       >
         Language • ভাষা • Ktien
@@ -51,7 +51,7 @@ export const LanguageSelector: React.FC = () => {
                   fontFamily: isSelected ? 'Nunito-Bold' : 'Nunito-SemiBold',
                   color: isSelected ? '#FFFFFF' : '#475569',
                 }}
-                className="text-sm"
+                className="text-xl"
               >
                 {lang.native}
               </Text>

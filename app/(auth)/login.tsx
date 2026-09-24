@@ -130,6 +130,7 @@ export default function CaregiverLoginScreen() {
       style={{ flex: 1, backgroundColor: '#FAF7F2' }}
     >
       <ScrollView 
+        automaticallyAdjustKeyboardInsets
         contentContainerStyle={{ flexGrow: 1, padding: 22, justifyContent: 'center' }}
         keyboardShouldPersistTaps="handled"
       >
@@ -140,7 +141,7 @@ export default function CaregiverLoginScreen() {
         >
           <ArrowLeft size={16} color="#4A5568" />
           <Text 
-            className="text-[#4A5568] ml-2 text-xs font-bold"
+            className="text-[#4A5568] ml-2 text-lg font-bold"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Back to Patient Screen
@@ -159,7 +160,7 @@ export default function CaregiverLoginScreen() {
               elevation: 2,
             }}
           >
-            <Text className="text-3xl">🩺</Text>
+            <Text className="text-4xl">🩺</Text>
           </View>
           <Text 
             className="text-4xl text-[#2B3A30] text-center"
@@ -168,7 +169,7 @@ export default function CaregiverLoginScreen() {
             Caregiver & Family Portal
           </Text>
           <Text 
-            className="text-[#597362] text-sm text-center mt-1 max-w-xs"
+            className="text-[#597362] text-xl text-center mt-1 max-w-xs"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
             Manage medication alerts, view patient cognitive progress, and customize exercises.
@@ -200,7 +201,7 @@ export default function CaregiverLoginScreen() {
                     elevation: 2,
                   }}
                 >
-                  <Text className="text-white text-base font-black">G</Text>
+                  <Text className="text-white text-xl font-black">G</Text>
                 </View>
                 <View className="flex-1">
                   <Text 
@@ -211,7 +212,7 @@ export default function CaregiverLoginScreen() {
                   </Text>
                   <Text 
                     numberOfLines={1} 
-                    className="text-sm text-[#2D3748] font-bold" 
+                    className="text-xl text-[#2D3748] font-bold" 
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     {customGoogleEmail}
@@ -224,7 +225,7 @@ export default function CaregiverLoginScreen() {
                 className="px-3 py-1 bg-white border border-[#E2DDD3] rounded-full shadow-xs"
               >
                 <Text 
-                  className="text-xs text-[#3D6C4E] font-bold" 
+                  className="text-lg text-[#3D6C4E] font-bold" 
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Switch
@@ -249,7 +250,7 @@ export default function CaregiverLoginScreen() {
           <View className="flex-row items-center my-3">
             <View className="flex-1 h-[1px] bg-[#EFEBE4]" />
             <Text 
-              className="text-[#8C8274] text-xs uppercase tracking-wider px-3"
+              className="text-[#8C8274] text-lg uppercase tracking-wider px-3"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               or enter credentials
@@ -261,12 +262,10 @@ export default function CaregiverLoginScreen() {
           <View className="flex-row bg-[#F5F1EA] p-1 rounded-2xl mb-4 border border-[#EFEBE4]">
             <TouchableOpacity
               onPress={() => { setIsRegisterMode(false); setErrorMessage(''); }}
-              className={`flex-1 py-2 rounded-xl items-center ${
-                !isRegisterMode ? 'bg-white shadow-sm' : ''
-              }`}
+              className={!isRegisterMode ? 'flex-1 py-3 rounded-xl items-center bg-white' : 'flex-1 py-3 rounded-xl items-center'}
             >
               <Text 
-                className={`text-sm ${!isRegisterMode ? 'text-[#2C503A] font-bold' : 'text-[#718096]'}`}
+                className={`text-xl ${!isRegisterMode ? 'text-[#2C503A] font-bold' : 'text-[#718096]'}`}
                 style={{ fontFamily: 'Nunito-Bold' }}
               >
                 Sign In
@@ -275,12 +274,10 @@ export default function CaregiverLoginScreen() {
 
             <TouchableOpacity
               onPress={() => { setIsRegisterMode(true); setErrorMessage(''); }}
-              className={`flex-1 py-2 rounded-xl items-center ${
-                isRegisterMode ? 'bg-white shadow-sm' : ''
-              }`}
+              className={isRegisterMode ? 'flex-1 py-3 rounded-xl items-center bg-white' : 'flex-1 py-3 rounded-xl items-center'}
             >
               <Text 
-                className={`text-sm ${isRegisterMode ? 'text-[#2C503A] font-bold' : 'text-[#718096]'}`}
+                className={`text-xl ${isRegisterMode ? 'text-[#2C503A] font-bold' : 'text-[#718096]'}`}
                 style={{ fontFamily: 'Nunito-Bold' }}
               >
                 New Account
@@ -291,7 +288,7 @@ export default function CaregiverLoginScreen() {
           {isRegisterMode && (
             <View className="mb-3">
               <Text 
-                className="text-[#4A5568] text-xs font-bold mb-1"
+                className="text-[#4A5568] text-lg font-bold mb-1"
                 style={{ fontFamily: 'Nunito-Bold' }}
               >
                 Your Full Name
@@ -302,14 +299,14 @@ export default function CaregiverLoginScreen() {
                 placeholder="e.g. Dr. Priya Das"
                 placeholderTextColor="#A0AEC0"
                 style={{ fontFamily: 'Nunito-SemiBold' }}
-                className="bg-[#FAF8F5] border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 text-base"
+                className="bg-[#FAF8F5] border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 text-xl"
               />
             </View>
           )}
 
           <View className="mb-3">
             <Text 
-              className="text-[#4A5568] text-xs font-bold mb-1"
+              className="text-[#4A5568] text-lg font-bold mb-1"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               Email Address
@@ -322,13 +319,13 @@ export default function CaregiverLoginScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               style={{ fontFamily: 'Nunito-SemiBold' }}
-              className="bg-[#FAF8F5] border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 text-base"
+              className="bg-[#FAF8F5] border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 text-xl"
             />
           </View>
 
           <View className="mb-4">
             <Text 
-              className="text-[#4A5568] text-xs font-bold mb-1"
+              className="text-[#4A5568] text-lg font-bold mb-1"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               Password
@@ -340,7 +337,7 @@ export default function CaregiverLoginScreen() {
               placeholderTextColor="#A0AEC0"
               secureTextEntry
               style={{ fontFamily: 'Nunito-SemiBold' }}
-              className="bg-[#FAF8F5] border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 text-base"
+              className="bg-[#FAF8F5] border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 text-xl"
             />
           </View>
 
@@ -348,7 +345,7 @@ export default function CaregiverLoginScreen() {
             <View className="flex-row items-center bg-[#FDF2F2] border border-[#F8D7D7] p-3 rounded-2xl mb-4">
               <AlertCircle size={18} color="#C53030" />
               <Text 
-                className="text-[#9B2C2C] text-xs font-bold ml-2 flex-1"
+                className="text-[#9B2C2C] text-lg font-bold ml-2 flex-1"
                 style={{ fontFamily: 'Nunito-Bold' }}
               >
                 {errorMessage}
@@ -371,7 +368,7 @@ export default function CaregiverLoginScreen() {
           >
             <Sparkles size={16} color="#675283" />
             <Text 
-              className="text-[#675283] font-bold text-xs ml-2"
+              className="text-[#675283] font-bold text-lg ml-2"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               ⚡ Instant Access (Demo Caregiver)
@@ -385,7 +382,7 @@ export default function CaregiverLoginScreen() {
             <View className="bg-white rounded-3xl p-6 w-full max-w-sm border border-[#EFEBE4] shadow-lg">
               <View className="flex-row items-center justify-between mb-4">
                 <Text 
-                  className="text-2xl text-[#2B3A30]"
+                  className="text-3xl text-[#2B3A30]"
                   style={{ fontFamily: 'PatrickHand' }}
                 >
                   Choose Google Account
@@ -396,7 +393,7 @@ export default function CaregiverLoginScreen() {
               </View>
 
               <Text 
-                className="text-[#597362] text-xs mb-3 font-semibold"
+                className="text-[#597362] text-lg mb-3 font-semibold"
                 style={{ fontFamily: 'Nunito-SemiBold' }}
               >
                 Enter any Google address to associate with your caregiver profile:
@@ -410,7 +407,7 @@ export default function CaregiverLoginScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 style={{ fontFamily: 'Nunito-SemiBold' }}
-                className="bg-[#FAF8F5] border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 text-base mb-4"
+                className="bg-[#FAF8F5] border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 text-xl mb-4"
               />
 
               <Button

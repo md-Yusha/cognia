@@ -9,6 +9,8 @@ import { requestNotificationPermissions } from '../src/services/notificationServ
 import { subscribeToAuthChanges } from '../src/services/authService';
 import { useCaregiverStore } from '../src/store/useCaregiverStore';
 import { View, ActivityIndicator } from 'react-native';
+import { AppErrorBoundary } from '../src/components/AppErrorBoundary';
+import { StressHost } from '../src/components/StressHost';
 
 export default function RootLayout() {
   const { setCaregiver } = useCaregiverStore();
@@ -44,6 +46,8 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
+      <AppErrorBoundary>
+      <StressHost>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -59,9 +63,13 @@ export default function RootLayout() {
         <Stack.Screen name="(patient)/games/pattern_match" />
         <Stack.Screen name="(patient)/games/focus_tap" />
         <Stack.Screen name="(patient)/reminders" />
+        <Stack.Screen name="(patient)/chat" />
         <Stack.Screen name="(caregiver)/dashboard" />
+        <Stack.Screen name="(caregiver)/chat/[id]" />
         <Stack.Screen name="(caregiver)/patients/[id]" />
       </Stack>
+      </StressHost>
+      </AppErrorBoundary>
     </SafeAreaProvider>
   );
 }

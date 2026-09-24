@@ -16,6 +16,7 @@ import {
 import { OfflineBadge } from '../../src/components/ui/OfflineBadge';
 import { LanguageSelector } from '../../src/components/ui/LanguageSelector';
 import { VoiceButton } from '../../src/components/ui/VoiceButton';
+import { CalmDay } from '../../src/components/CalmDay';
 import { usePatientStore } from '../../src/store/usePatientStore';
 import { speakPrompt } from '../../src/services/ttsService';
 import * as Haptics from 'expo-haptics';
@@ -39,7 +40,13 @@ export default function PatientHomeScreen() {
   };
 
   const activeReminders = reminders.filter((r) => r.isActive && !r.lastAcknowledgedAt);
-  const completedToday = Math.min(recentSessions.length, 4);
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const completedToday = new Set(
+    recentSessions
+      .filter((session) => session.timestamp >= startOfDay.getTime())
+      .map((session) => session.gameType)
+  ).size;
 
   return (
     <ScrollView
@@ -56,7 +63,7 @@ export default function PatientHomeScreen() {
         >
           <LogOut size={14} color="#64748B" />
           <Text 
-            className="text-[#475569] font-bold ml-1.5 text-xs"
+            className="text-[#475569] font-bold ml-1.5 text-lg"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             {t('logout')}
@@ -81,7 +88,7 @@ export default function PatientHomeScreen() {
               <Sun size={24} color="#D97706" />
             </View>
             <Text 
-              className="text-3xl text-[#2C503A] flex-1"
+              className="text-4xl text-[#2C503A] flex-1"
               style={{ fontFamily: 'PatrickHand' }}
             >
               {t('welcome', { name: patientName })}
@@ -96,7 +103,7 @@ export default function PatientHomeScreen() {
         </View>
 
         <Text 
-          className="text-[#4A7C59] text-sm font-semibold"
+          className="text-[#4A7C59] text-xl font-semibold"
           style={{ fontFamily: 'Nunito-SemiBold' }}
         >
           {t('daily_activities')}
@@ -107,7 +114,7 @@ export default function PatientHomeScreen() {
           <View className="flex-row items-center">
             <Star size={18} color="#D97706" />
             <Text 
-              className="text-[#2C503A] font-bold text-xs ml-2"
+              className="text-[#2C503A] font-bold text-lg ml-2"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               Today's Gentle Progress: {completedToday} of 4 activities
@@ -121,6 +128,18 @@ export default function PatientHomeScreen() {
           </View>
         </View>
       </View>
+
+      <CalmDay patientName={patientName} />
+
+      <TouchableOpacity
+        onPress={() => router.push('/(patient)/chat')}
+        className="bg-[#FDF3ED] border border-[#F4D8C9] rounded-[28px] p-5 mb-4"
+      >
+        <Text className="text-[#8A4226] text-4xl" style={{ fontFamily: 'PatrickHand' }}>Talk with family</Text>
+        <Text className="text-[#597362] text-xl mt-1" style={{ fontFamily: 'Nunito-SemiBold' }}>
+          Send a message. Voice opens when your caregiver is in the app.
+        </Text>
+      </TouchableOpacity>
 
       {/* Language Bar */}
       <View className="bg-white rounded-2xl p-2 border border-[#EFEBE4] shadow-sm mb-4">
@@ -145,7 +164,7 @@ export default function PatientHomeScreen() {
                 <Bell size={18} color="#A95838" />
               </View>
               <Text 
-                className="text-2xl text-[#864127]"
+                className="text-3xl text-[#864127]"
                 style={{ fontFamily: 'PatrickHand' }}
               >
                 {t('reminders_title')}
@@ -153,7 +172,7 @@ export default function PatientHomeScreen() {
             </View>
             <TouchableOpacity onPress={() => router.push('/(patient)/reminders')}>
               <Text 
-                className="text-[#A95838] font-bold text-xs underline"
+                className="text-[#A95838] font-bold text-lg underline"
                 style={{ fontFamily: 'Nunito-Bold' }}
               >
                 View All
@@ -168,13 +187,13 @@ export default function PatientHomeScreen() {
             >
               <View className="flex-1 mr-3">
                 <Text 
-                  className="text-[#2D3748] text-base font-bold"
+                  className="text-[#2D3748] text-xl font-bold"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   {item.title}
                 </Text>
                 <Text 
-                  className="text-[#C87453] text-xs font-semibold mt-0.5"
+                  className="text-[#C87453] text-lg font-semibold mt-0.5"
                   style={{ fontFamily: 'Nunito-SemiBold' }}
                 >
                   ⏰ {item.time} • {item.dosageOrDetails}
@@ -190,7 +209,7 @@ export default function PatientHomeScreen() {
               >
                 <CheckCircle size={15} color="#FFFFFF" />
                 <Text 
-                  className="text-white font-bold ml-1.5 text-xs"
+                  className="text-white font-bold ml-1.5 text-lg"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Done
@@ -204,7 +223,7 @@ export default function PatientHomeScreen() {
       {/* 4 Cultural Cognitive Games Header */}
       <View className="flex-row items-center justify-between mb-3 mt-1">
         <Text 
-          className="text-3xl text-[#2B3A30]"
+          className="text-4xl text-[#2B3A30]"
           style={{ fontFamily: 'PatrickHand' }}
         >
           {t('games_title')}
@@ -230,7 +249,7 @@ export default function PatientHomeScreen() {
           }}
         >
           <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center mr-4 border border-[#C2DEC8] shadow-sm">
-            <Text className="text-3xl">🦏</Text>
+            <Text className="text-4xl">🦏</Text>
           </View>
           <View className="flex-1 mr-2">
             <View className="bg-white/80 self-start px-2 py-0.5 rounded-full mb-1 border border-[#C2DEC8]">
@@ -242,13 +261,13 @@ export default function PatientHomeScreen() {
               </Text>
             </View>
             <Text 
-              className="text-2xl text-[#274733]"
+              className="text-3xl text-[#274733]"
               style={{ fontFamily: 'PatrickHand' }}
             >
               {t('game_memory')}
             </Text>
             <Text 
-              className="text-[#437756] text-xs mt-0.5 font-semibold"
+              className="text-[#437756] text-lg mt-0.5 font-semibold"
               style={{ fontFamily: 'Nunito-SemiBold' }}
             >
               Find matching picture pairs of Kaziranga animals & tea pots.
@@ -274,7 +293,7 @@ export default function PatientHomeScreen() {
           }}
         >
           <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center mr-4 border border-[#ECC0AC] shadow-sm">
-            <Text className="text-3xl">☕</Text>
+            <Text className="text-4xl">☕</Text>
           </View>
           <View className="flex-1 mr-2">
             <View className="bg-white/80 self-start px-2 py-0.5 rounded-full mb-1 border border-[#ECC0AC]">
@@ -286,13 +305,13 @@ export default function PatientHomeScreen() {
               </Text>
             </View>
             <Text 
-              className="text-2xl text-[#864127]"
+              className="text-3xl text-[#864127]"
               style={{ fontFamily: 'PatrickHand' }}
             >
               {t('game_routine')}
             </Text>
             <Text 
-              className="text-[#A95838] text-xs mt-0.5 font-semibold"
+              className="text-[#A95838] text-lg mt-0.5 font-semibold"
               style={{ fontFamily: 'Nunito-SemiBold' }}
             >
               Arrange morning tea, medicine, and tasks in proper sequence.
@@ -318,7 +337,7 @@ export default function PatientHomeScreen() {
           }}
         >
           <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center mr-4 border border-[#C3B4D3] shadow-sm">
-            <Text className="text-3xl">🎋</Text>
+            <Text className="text-4xl">🎋</Text>
           </View>
           <View className="flex-1 mr-2">
             <View className="bg-white/80 self-start px-2 py-0.5 rounded-full mb-1 border border-[#C3B4D3]">
@@ -330,13 +349,13 @@ export default function PatientHomeScreen() {
               </Text>
             </View>
             <Text 
-              className="text-2xl text-[#503D68]"
+              className="text-3xl text-[#503D68]"
               style={{ fontFamily: 'PatrickHand' }}
             >
               {t('game_pattern')}
             </Text>
             <Text 
-              className="text-[#675283] text-xs mt-0.5 font-semibold"
+              className="text-[#675283] text-lg mt-0.5 font-semibold"
               style={{ fontFamily: 'Nunito-SemiBold' }}
             >
               Complete the missing traditional handloom motif.
@@ -362,7 +381,7 @@ export default function PatientHomeScreen() {
           }}
         >
           <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center mr-4 border border-[#9ECFDA] shadow-sm">
-            <Text className="text-3xl">🍃</Text>
+            <Text className="text-4xl">🍃</Text>
           </View>
           <View className="flex-1 mr-2">
             <View className="bg-white/80 self-start px-2 py-0.5 rounded-full mb-1 border border-[#9ECFDA]">
@@ -374,13 +393,13 @@ export default function PatientHomeScreen() {
               </Text>
             </View>
             <Text 
-              className="text-2xl text-[#2C5E6E]"
+              className="text-3xl text-[#2C5E6E]"
               style={{ fontFamily: 'PatrickHand' }}
             >
               {t('game_focus')}
             </Text>
             <Text 
-              className="text-[#43798A] text-xs mt-0.5 font-semibold"
+              className="text-[#43798A] text-lg mt-0.5 font-semibold"
               style={{ fontFamily: 'Nunito-SemiBold' }}
             >
               Tap the fresh green tea leaves as they appear in the garden.

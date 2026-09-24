@@ -84,14 +84,14 @@ export const Button: React.FC<ButtonProps> = ({
   }
 
   let sizeClasses = 'min-h-[64px] py-4 px-6 rounded-full';
-  let fontClasses = 'text-xl';
+  let fontClasses = 'text-2xl';
 
   if (size === 'normal') {
     sizeClasses = 'min-h-[48px] py-2.5 px-5 rounded-full';
-    fontClasses = 'text-sm';
+    fontClasses = 'text-xl';
   } else if (size === 'large') {
     sizeClasses = 'min-h-[56px] py-3.5 px-6 rounded-full';
-    fontClasses = 'text-base';
+    fontClasses = 'text-xl';
   }
 
   const isLightBg = variant === 'secondary' || variant === 'soft' || variant === 'lavender' || variant === 'sky' || variant === 'outline' || variant === 'google';

@@ -51,7 +51,7 @@ export default function PatientRemindersScreen() {
         >
           <ArrowLeft size={16} color="#4A5568" />
           <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-xs"
+            className="text-[#4A5568] font-bold ml-1.5 text-lg"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Back
@@ -85,7 +85,7 @@ export default function PatientRemindersScreen() {
           </Text>
         </View>
         <Text 
-          className="text-[#A95838] text-center text-sm font-semibold mt-1"
+          className="text-[#A95838] text-center text-xl font-semibold mt-1"
           style={{ fontFamily: 'Nunito-SemiBold' }}
         >
           Daily care schedule set by your caregiver.
@@ -100,13 +100,13 @@ export default function PatientRemindersScreen() {
           >
             <Text className="text-4xl mb-2">🌸</Text>
             <Text 
-              className="text-3xl text-[#2B3A30] text-center"
+              className="text-4xl text-[#2B3A30] text-center"
               style={{ fontFamily: 'PatrickHand' }}
             >
               All Caught Up!
             </Text>
             <Text 
-              className="text-[#597362] text-sm text-center mt-1"
+              className="text-[#597362] text-xl text-center mt-1"
               style={{ fontFamily: 'Nunito-SemiBold' }}
             >
               You have no pending medicine or water reminders for right now.
@@ -119,9 +119,7 @@ export default function PatientRemindersScreen() {
           return (
             <View
               key={rem.id}
-              className={`p-6 rounded-3xl border ${
-                isDoneToday ? 'bg-[#EBF4EE] border-[#CDE3D5]' : 'bg-white border-[#EFEBE4]'
-              }`}
+              className={isDoneToday ? 'p-6 rounded-3xl border bg-[#EBF4EE] border-[#CDE3D5]' : 'p-6 rounded-3xl border bg-white border-[#EFEBE4]'}
               style={{
                 shadowColor: '#7A6855',
                 shadowOffset: { width: 0, height: 3 },
@@ -137,13 +135,13 @@ export default function PatientRemindersScreen() {
                   </View>
                   <View className="flex-1">
                     <Text 
-                      className={`text-xl font-bold ${isDoneToday ? 'text-[#2C503A]' : 'text-[#2D3748]'}`}
+                      className={`text-2xl font-bold ${isDoneToday ? 'text-[#2C503A]' : 'text-[#2D3748]'}`}
                       style={{ fontFamily: 'Nunito-Bold' }}
                     >
                       {rem.title}
                     </Text>
                     <Text 
-                      className="text-[#C87453] font-bold text-sm mt-0.5"
+                      className="text-[#C87453] font-bold text-xl mt-0.5"
                       style={{ fontFamily: 'Nunito-Bold' }}
                     >
                       ⏰ {rem.time}
@@ -161,9 +159,7 @@ export default function PatientRemindersScreen() {
 
               {rem.dosageOrDetails && (
                 <Text 
-                  className={`text-sm mb-4 p-3.5 rounded-2xl ${
-                    isDoneToday ? 'bg-white/80 text-[#2C503A]' : 'bg-[#FAF8F5] text-[#4A5568] border border-[#EFEBE4]'
-                  }`}
+                  className={isDoneToday ? 'text-xl mb-4 p-3.5 rounded-2xl bg-white/80 text-[#2C503A]' : 'text-xl mb-4 p-3.5 rounded-2xl bg-[#FAF8F5] text-[#4A5568] border border-[#EFEBE4]'}
                   style={{ fontFamily: 'Nunito-SemiBold' }}
                 >
                   {rem.dosageOrDetails}
@@ -174,7 +170,7 @@ export default function PatientRemindersScreen() {
                 <View className="flex-row items-center justify-center bg-white border border-[#CDE3D5] py-3 rounded-full">
                   <CheckCircle size={18} color="#4A7C59" />
                   <Text 
-                    className="text-[#2C503A] font-bold text-sm ml-2"
+                    className="text-[#2C503A] font-bold text-xl ml-2"
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     Completed for Today

@@ -116,7 +116,7 @@ export default function CaregiverPatientDetailScreen() {
         >
           <ArrowLeft size={16} color="#4A5568" />
           <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-xs"
+            className="text-[#4A5568] font-bold ml-1.5 text-lg"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Patients
@@ -126,7 +126,7 @@ export default function CaregiverPatientDetailScreen() {
         <View className="flex-row items-center bg-[#FDF3ED] border border-[#F4D8C9] px-3.5 py-1 rounded-full">
           <KeyRound size={14} color="#C87453" />
           <Text 
-            className="text-[#C87453] font-bold text-xs ml-1.5 tracking-wider"
+            className="text-[#C87453] font-bold text-lg ml-1.5 tracking-wider"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             {patient.accessCode}
@@ -146,28 +146,28 @@ export default function CaregiverPatientDetailScreen() {
         }}
       >
         <Text 
-          className="text-3xl text-[#2B3A30]"
+          className="text-4xl text-[#2B3A30]"
           style={{ fontFamily: 'PatrickHand' }}
         >
           {patient.name}
         </Text>
         <View className="flex-row items-center gap-2 mt-1.5 flex-wrap">
           <Text 
-            className="text-[#718096] text-xs font-semibold"
+            className="text-[#718096] text-lg font-semibold"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
             Age: {patient.age || 72}
           </Text>
-          <Text className="text-[#CBD5E1] text-xs">•</Text>
+          <Text className="text-[#CBD5E1] text-lg">•</Text>
           <Text 
-            className="text-[#4A7C59] text-xs font-bold"
+            className="text-[#4A7C59] text-lg font-bold"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Lang: {patient.preferredLanguage.toUpperCase()}
           </Text>
-          <Text className="text-[#CBD5E1] text-xs">•</Text>
+          <Text className="text-[#CBD5E1] text-lg">•</Text>
           <Text 
-            className="text-[#C87453] text-xs font-bold"
+            className="text-[#C87453] text-lg font-bold"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Stage: {patient.dementiaStage || 'Early'}
@@ -179,13 +179,11 @@ export default function CaregiverPatientDetailScreen() {
       <View className="flex-row bg-[#F5F1EA] p-1 rounded-2xl mb-5 border border-[#EFEBE4]">
         <TouchableOpacity
           onPress={() => setActiveTab('analytics')}
-          className={`flex-1 py-2.5 rounded-xl items-center flex-row justify-center ${
-            activeTab === 'analytics' ? 'bg-white shadow-sm' : ''
-          }`}
+          className={activeTab === 'analytics' ? 'flex-1 py-3 rounded-xl items-center flex-row justify-center bg-white' : 'flex-1 py-3 rounded-xl items-center flex-row justify-center'}
         >
           <Brain size={16} color={activeTab === 'analytics' ? '#4A7C59' : '#718096'} />
           <Text 
-            className={`font-bold ml-1.5 text-xs ${activeTab === 'analytics' ? 'text-[#2C503A]' : 'text-[#718096]'}`}
+            className={`font-bold ml-1.5 text-lg ${activeTab === 'analytics' ? 'text-[#2C503A]' : 'text-[#718096]'}`}
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Cognitive Trends
@@ -194,13 +192,11 @@ export default function CaregiverPatientDetailScreen() {
 
         <TouchableOpacity
           onPress={() => setActiveTab('reminders')}
-          className={`flex-1 py-2.5 rounded-xl items-center flex-row justify-center ${
-            activeTab === 'reminders' ? 'bg-white shadow-sm' : ''
-          }`}
+          className={activeTab === 'reminders' ? 'flex-1 py-3 rounded-xl items-center flex-row justify-center bg-white' : 'flex-1 py-3 rounded-xl items-center flex-row justify-center'}
         >
           <Bell size={16} color={activeTab === 'reminders' ? '#4A7C59' : '#718096'} />
           <Text 
-            className={`font-bold ml-1.5 text-xs ${activeTab === 'reminders' ? 'text-[#2C503A]' : 'text-[#718096]'}`}
+            className={`font-bold ml-1.5 text-lg ${activeTab === 'reminders' ? 'text-[#2C503A]' : 'text-[#718096]'}`}
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Care Reminders
@@ -225,7 +221,7 @@ export default function CaregiverPatientDetailScreen() {
               <View className="flex-row items-center">
                 <TrendingUp size={20} color="#4A7C59" />
                 <Text 
-                  className="text-lg font-bold text-[#2D3748] ml-2"
+                  className="text-xl font-bold text-[#2D3748] ml-2"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Weekly Accuracy Trend
@@ -233,7 +229,7 @@ export default function CaregiverPatientDetailScreen() {
               </View>
               <View className="bg-[#EBF4EE] px-2.5 py-0.5 rounded-full">
                 <Text 
-                  className="text-[#2C503A] text-xs font-bold"
+                  className="text-[#2C503A] text-lg font-bold"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   Avg 90.5%
@@ -258,7 +254,7 @@ export default function CaregiverPatientDetailScreen() {
                     style={{ height: `${bar.val}%` }}
                   />
                   <Text 
-                    className="text-[#718096] text-xs font-semibold mt-2"
+                    className="text-[#718096] text-lg font-semibold mt-2"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     {bar.day}
@@ -269,7 +265,7 @@ export default function CaregiverPatientDetailScreen() {
           </View>
 
           <Text 
-            className="text-2xl text-[#2B3A30] mt-1"
+            className="text-3xl text-[#2B3A30] mt-1"
             style={{ fontFamily: 'PatrickHand' }}
           >
             Game Performance History
@@ -282,14 +278,14 @@ export default function CaregiverPatientDetailScreen() {
             >
               <View className="flex-row items-center justify-between">
                 <Text 
-                  className="text-[#2D3748] text-base font-bold"
+                  className="text-[#2D3748] text-xl font-bold"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   {item.game}
                 </Text>
                 <View className="bg-[#EBF4EE] px-2.5 py-0.5 rounded-full">
                   <Text 
-                    className="text-[#2C503A] text-xs font-bold"
+                    className="text-[#2C503A] text-lg font-bold"
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     {item.tier}
@@ -300,13 +296,13 @@ export default function CaregiverPatientDetailScreen() {
               <View className="flex-row items-center justify-between mt-3">
                 <View>
                   <Text 
-                    className="text-[#718096] text-xs uppercase"
+                    className="text-[#718096] text-lg uppercase"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     Accuracy
                   </Text>
                   <Text 
-                    className="text-2xl text-[#4A7C59] mt-0.5"
+                    className="text-3xl text-[#4A7C59] mt-0.5"
                     style={{ fontFamily: 'PatrickHand' }}
                   >
                     {item.accuracy}%
@@ -314,13 +310,13 @@ export default function CaregiverPatientDetailScreen() {
                 </View>
                 <View>
                   <Text 
-                    className="text-[#718096] text-xs uppercase"
+                    className="text-[#718096] text-lg uppercase"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     Reaction Speed
                   </Text>
                   <Text 
-                    className="text-2xl text-[#C87453] mt-0.5"
+                    className="text-3xl text-[#C87453] mt-0.5"
                     style={{ fontFamily: 'PatrickHand' }}
                   >
                     {item.reaction}
@@ -328,13 +324,13 @@ export default function CaregiverPatientDetailScreen() {
                 </View>
                 <View>
                   <Text 
-                    className="text-[#718096] text-xs uppercase"
+                    className="text-[#718096] text-lg uppercase"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     Trend
                   </Text>
                   <Text 
-                    className="text-2xl text-[#59936E] mt-0.5"
+                    className="text-3xl text-[#59936E] mt-0.5"
                     style={{ fontFamily: 'PatrickHand' }}
                   >
                     {item.trend}
@@ -351,7 +347,7 @@ export default function CaregiverPatientDetailScreen() {
         <View>
           <View className="flex-row items-center justify-between mb-3">
             <Text 
-              className="text-2xl text-[#2B3A30]"
+              className="text-3xl text-[#2B3A30]"
               style={{ fontFamily: 'PatrickHand' }}
             >
               Active Reminders
@@ -362,7 +358,7 @@ export default function CaregiverPatientDetailScreen() {
             >
               <Plus size={16} color="#FFFFFF" />
               <Text 
-                className="text-white font-bold text-xs ml-1"
+                className="text-white font-bold text-lg ml-1"
                 style={{ fontFamily: 'Nunito-Bold' }}
               >
                 New Reminder
@@ -378,20 +374,20 @@ export default function CaregiverPatientDetailScreen() {
               >
                 <View className="flex-1 mr-2">
                   <Text 
-                    className="text-[#2D3748] text-base font-bold"
+                    className="text-[#2D3748] text-xl font-bold"
                     style={{ fontFamily: 'Nunito-Bold' }}
                   >
                     {rem.title}
                   </Text>
                   <Text 
-                    className="text-[#C87453] text-xs font-semibold mt-0.5"
+                    className="text-[#C87453] text-lg font-semibold mt-0.5"
                     style={{ fontFamily: 'Nunito-SemiBold' }}
                   >
                     ⏰ {rem.time}
                   </Text>
                   {rem.dosageOrDetails ? (
                     <Text 
-                      className="text-[#718096] text-xs mt-1"
+                      className="text-[#718096] text-lg mt-1"
                       style={{ fontFamily: 'Nunito-SemiBold' }}
                     >
                       {rem.dosageOrDetails}
@@ -417,7 +413,7 @@ export default function CaregiverPatientDetailScreen() {
           <View className="bg-[#FAF8F5] border-t border-[#E8E2D8] p-6 rounded-t-3xl max-h-[90%]">
             <View className="flex-row items-center justify-between mb-4">
               <Text 
-                className="text-2xl text-[#2B3A30]"
+                className="text-3xl text-[#2B3A30]"
                 style={{ fontFamily: 'PatrickHand' }}
               >
                 Add Patient Reminder
@@ -428,7 +424,7 @@ export default function CaregiverPatientDetailScreen() {
             </View>
 
             <Text 
-              className="text-[#4A5568] text-xs font-bold mb-1"
+              className="text-[#4A5568] text-lg font-bold mb-1"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               Reminder Title
@@ -439,11 +435,11 @@ export default function CaregiverPatientDetailScreen() {
               placeholder="e.g. Afternoon Blood Pressure Tablet"
               placeholderTextColor="#A0AEC0"
               style={{ fontFamily: 'Nunito-SemiBold' }}
-              className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-3 text-base"
+              className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-3 text-xl"
             />
 
             <Text 
-              className="text-[#4A5568] text-xs font-bold mb-1"
+              className="text-[#4A5568] text-lg font-bold mb-1"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               Trigger Time (HH:mm)
@@ -454,11 +450,11 @@ export default function CaregiverPatientDetailScreen() {
               placeholder="14:00"
               placeholderTextColor="#A0AEC0"
               style={{ fontFamily: 'Nunito-SemiBold' }}
-              className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-3 text-base"
+              className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-3 text-xl"
             />
 
             <Text 
-              className="text-[#4A5568] text-xs font-bold mb-1"
+              className="text-[#4A5568] text-lg font-bold mb-1"
               style={{ fontFamily: 'Nunito-Bold' }}
             >
               Instructions / Dosage
@@ -469,7 +465,7 @@ export default function CaregiverPatientDetailScreen() {
               placeholder="1 tablet with a glass of warm water"
               placeholderTextColor="#A0AEC0"
               style={{ fontFamily: 'Nunito-SemiBold' }}
-              className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-5 text-base"
+              className="bg-white border border-[#E2DDD3] text-[#2D3748] rounded-2xl px-4 py-3 mb-5 text-xl"
             />
 
             <Button

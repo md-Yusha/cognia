@@ -26,7 +26,7 @@ const MOTIFS: PatternItem[] = [
 export default function PatternMatchGameScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { patient, recordGameSession, recentSessions, updateDifficultyTier } = usePatientStore();
+  const { patient, recordGameSession, updateDifficultyTier } = usePatientStore();
 
   const currentTier = patient?.difficultyLevels.pattern_recognition || 'easy';
 
@@ -120,7 +120,7 @@ export default function PatternMatchGameScreen() {
       durationSeconds,
     });
 
-    const adaptResult = await calculateAdaptiveTier('pattern_recognition', currentTier, recentSessions);
+    const adaptResult = await calculateAdaptiveTier('pattern_recognition', currentTier, usePatientStore.getState().recentSessions);
     if (adaptResult.suggestedTier !== currentTier) {
       updateDifficultyTier('pattern_recognition', adaptResult.suggestedTier);
     }
@@ -139,7 +139,7 @@ export default function PatternMatchGameScreen() {
         >
           <ArrowLeft size={16} color="#4A5568" />
           <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-xs"
+            className="text-[#4A5568] font-bold ml-1.5 text-lg"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Back
@@ -148,7 +148,7 @@ export default function PatternMatchGameScreen() {
 
         <View className="bg-[#F5F0F8] border border-[#DDD3E7] px-3.5 py-1 rounded-full">
           <Text 
-            className="text-[#503D68] text-xs font-bold uppercase tracking-wider"
+            className="text-[#503D68] text-lg font-bold uppercase tracking-wider"
             style={{ fontFamily: 'Nunito-Bold' }}
           >
             Level: {currentTier}
@@ -174,7 +174,7 @@ export default function PatternMatchGameScreen() {
           {t('game_pattern')}
         </Text>
         <Text 
-          className="text-[#675283] text-center text-sm font-semibold mt-1"
+          className="text-[#675283] text-center text-xl font-semibold mt-1"
           style={{ fontFamily: 'Nunito-SemiBold' }}
         >
           Identify the missing traditional handloom motif.
@@ -193,7 +193,7 @@ export default function PatternMatchGameScreen() {
         }}
       >
         <Text 
-          className="text-2xl text-[#2D3748] text-center mb-4"
+          className="text-3xl text-[#2D3748] text-center mb-4"
           style={{ fontFamily: 'PatrickHand' }}
         >
           Complete the sequence:
@@ -205,16 +205,16 @@ export default function PatternMatchGameScreen() {
               key={idx}
               className="w-16 h-16 bg-[#FAF7F2] border border-[#E8E2D8] rounded-2xl items-center justify-center p-2"
             >
-              <Text className="text-3xl">{item.emoji}</Text>
+              <Text className="text-4xl">{item.emoji}</Text>
             </View>
           ))}
 
           {/* Missing Box */}
           <View className="w-16 h-16 bg-[#FDF3ED] border-2 border-[#C87453] border-dashed rounded-2xl items-center justify-center p-2">
             {selectedOption ? (
-              <Text className="text-3xl">{selectedOption.emoji}</Text>
+              <Text className="text-4xl">{selectedOption.emoji}</Text>
             ) : (
-              <Text className="text-2xl font-black text-[#C87453]">?</Text>
+              <Text className="text-3xl font-black text-[#C87453]">?</Text>
             )}
           </View>
         </View>
@@ -236,13 +236,13 @@ export default function PatternMatchGameScreen() {
             <Trophy size={40} color={isCorrect ? '#59936E' : '#836EA1'} />
           </View>
           <Text 
-            className="text-3xl text-[#2B3A30] mt-2 text-center"
+            className="text-4xl text-[#2B3A30] mt-2 text-center"
             style={{ fontFamily: 'PatrickHand' }}
           >
             {isCorrect ? t('well_done') : t('try_again')}
           </Text>
           <Text 
-            className="text-[#64748B] text-sm text-center mt-1"
+            className="text-[#64748B] text-xl text-center mt-1"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
             {isCorrect ? 'You solved the pattern flawlessly!' : 'The pattern repeats with matching motifs.'}
@@ -271,7 +271,7 @@ export default function PatternMatchGameScreen() {
       ) : (
         <View className="mb-6">
           <Text 
-            className="text-2xl text-[#2B3A30] mb-3 text-center"
+            className="text-3xl text-[#2B3A30] mb-3 text-center"
             style={{ fontFamily: 'PatrickHand' }}
           >
             Tap the matching symbol:
@@ -286,7 +286,7 @@ export default function PatternMatchGameScreen() {
               >
                 <Text className="text-4xl">{opt.emoji}</Text>
                 <Text 
-                  className="text-[#2D3748] text-sm font-bold mt-1"
+                  className="text-[#2D3748] text-xl font-bold mt-1"
                   style={{ fontFamily: 'Nunito-Bold' }}
                 >
                   {opt.label}
