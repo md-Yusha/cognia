@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, RefreshCw, Trophy } from 'lucide-react-native';
+import { ArrowLeft, RefreshCw, Trophy, Home } from 'lucide-react-native';
 import { Button } from '../../../src/components/ui/Button';
 import { VoiceButton } from '../../../src/components/ui/VoiceButton';
+import { ResponsiveContainer } from '../../../src/components/ui/ResponsiveContainer';
 import { usePatientStore } from '../../../src/store/usePatientStore';
 import { calculateAdaptiveTier } from '../../../src/services/adaptiveEngine';
 import { speakPrompt } from '../../../src/services/ttsService';
@@ -129,181 +130,205 @@ export default function PatternMatchGameScreen() {
   return (
     <ScrollView 
       style={{ flex: 1, backgroundColor: '#FAF7F2' }} 
-      contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16, paddingBottom: 50 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 64 }}
+      keyboardShouldPersistTaps="handled"
     >
-      {/* Top Header */}
-      <View className="flex-row items-center justify-between pt-6 mb-4">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="flex-row items-center bg-white border border-[#E8E2D8] px-4 py-2 rounded-full shadow-sm"
-        >
-          <ArrowLeft size={16} color="#4A5568" />
-          <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-lg"
-            style={{ fontFamily: 'Nunito-Bold' }}
+      <ResponsiveContainer maxWidth="md">
+        {/* Top Header */}
+        <View className="flex-row items-center justify-between pt-4 mb-4">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.82}
+            className="flex-row items-center bg-white border border-[#CBD5E1] px-3.5 py-1.5 rounded-full"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
           >
-            Back
-          </Text>
-        </TouchableOpacity>
-
-        <View className="bg-[#F5F0F8] border border-[#DDD3E7] px-3.5 py-1 rounded-full">
-          <Text 
-            className="text-[#503D68] text-lg font-bold uppercase tracking-wider"
-            style={{ fontFamily: 'Nunito-Bold' }}
-          >
-            Level: {currentTier}
-          </Text>
-        </View>
-      </View>
-
-      {/* Game Title */}
-      <View 
-        className="bg-[#F5F0F8] rounded-[32px] p-6 border border-[#DDD3E7] mb-6"
-        style={{
-          shadowColor: '#503D68',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          elevation: 2,
-        }}
-      >
-        <Text 
-          className="text-4xl text-[#503D68] text-center"
-          style={{ fontFamily: 'PatrickHand' }}
-        >
-          {t('game_pattern')}
-        </Text>
-        <Text 
-          className="text-[#675283] text-center text-xl font-semibold mt-1"
-          style={{ fontFamily: 'Nunito-SemiBold' }}
-        >
-          Identify the missing traditional handloom motif.
-        </Text>
-      </View>
-
-      {/* Pattern Display */}
-      <View 
-        className="bg-white rounded-[32px] border border-[#EFEBE4] p-6 mb-6"
-        style={{
-          shadowColor: '#503D68',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.06,
-          shadowRadius: 14,
-          elevation: 2,
-        }}
-      >
-        <Text 
-          className="text-3xl text-[#2D3748] text-center mb-4"
-          style={{ fontFamily: 'PatrickHand' }}
-        >
-          Complete the sequence:
-        </Text>
-
-        <View className="flex-row flex-wrap justify-center items-center gap-2.5">
-          {patternSequence.map((item, idx) => (
-            <View
-              key={idx}
-              className="w-16 h-16 bg-[#FAF7F2] border border-[#E8E2D8] rounded-2xl items-center justify-center p-2"
+            <ArrowLeft size={15} color="#475569" />
+            <Text 
+              className="text-[#475569] font-bold ml-1.5 text-sm"
+              style={{ fontFamily: 'Nunito-Bold' }}
             >
-              <Text className="text-4xl">{item.emoji}</Text>
-            </View>
-          ))}
+              Back
+            </Text>
+          </TouchableOpacity>
 
-          {/* Missing Box */}
-          <View className="w-16 h-16 bg-[#FDF3ED] border-2 border-[#C87453] border-dashed rounded-2xl items-center justify-center p-2">
-            {selectedOption ? (
-              <Text className="text-4xl">{selectedOption.emoji}</Text>
-            ) : (
-              <Text className="text-3xl font-black text-[#C87453]">?</Text>
-            )}
+          <View className="bg-[#F2ECF8] border border-[#DDD0E8] px-3.5 py-1 rounded-full">
+            <Text 
+              className="text-[#6A4690] text-xs font-bold uppercase tracking-wider"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              Level: {currentTier}
+            </Text>
           </View>
         </View>
-      </View>
 
-      {/* Result or Options */}
-      {isFinished ? (
+        {/* Game Title */}
         <View 
-          className={`p-8 rounded-3xl border-2 items-center mb-6 ${isCorrect ? 'bg-white border-[#CDE3D5]' : 'bg-white border-[#F5D8C9]'}`}
+          className="bg-[#F8F6FB] rounded-[28px] p-5 border-2 border-[#E3D7EE] mb-5"
           style={{
-            shadowColor: '#503D68',
-            shadowOffset: { width: 0, height: 4 },
+            shadowColor: '#6A4690',
+            shadowOffset: { width: 0, height: 3 },
             shadowOpacity: 0.08,
-            shadowRadius: 14,
-            elevation: 3,
+            shadowRadius: 10,
+            elevation: 2,
           }}
         >
-          <View className="w-18 h-18 bg-[#FAF3E0] rounded-full items-center justify-center mb-2">
-            <Trophy size={40} color={isCorrect ? '#59936E' : '#836EA1'} />
-          </View>
           <Text 
-            className="text-4xl text-[#2B3A30] mt-2 text-center"
-            style={{ fontFamily: 'PatrickHand' }}
+            className="text-2xl text-[#4C1D95] font-bold text-center"
+            style={{ fontFamily: 'Nunito-Bold' }}
           >
-            {isCorrect ? t('well_done') : t('try_again')}
+            {t('game_pattern')}
           </Text>
           <Text 
-            className="text-[#64748B] text-xl text-center mt-1"
+            className="text-[#6D28D9] text-center text-sm font-semibold mt-1"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
-            {isCorrect ? 'You solved the pattern flawlessly!' : 'The pattern repeats with matching motifs.'}
+            Identify the missing traditional handloom motif.
           </Text>
-
-          <View className="flex-row gap-3 mt-6 w-full">
-            <View className="flex-1">
-              <Button
-                title="Play Next"
-                variant="primary"
-                size="large"
-                icon={<RefreshCw size={18} color="#FFFFFF" />}
-                onPress={initGame}
-              />
-            </View>
-            <View className="flex-1">
-              <Button
-                title="Home"
-                variant="outline"
-                size="large"
-                onPress={() => router.replace('/(patient)/home')}
-              />
-            </View>
-          </View>
         </View>
-      ) : (
-        <View className="mb-6">
+
+        {/* Pattern Display Box */}
+        <View 
+          className="bg-white rounded-[28px] border-2 border-[#EDE7DD] p-5 mb-5"
+          style={{
+            shadowColor: '#3A3226',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.06,
+            shadowRadius: 10,
+            elevation: 2,
+          }}
+        >
           <Text 
-            className="text-3xl text-[#2B3A30] mb-3 text-center"
-            style={{ fontFamily: 'PatrickHand' }}
+            className="text-base text-[#1E293B] font-bold text-center mb-3"
+            style={{ fontFamily: 'Nunito-Bold' }}
           >
-            Tap the matching symbol:
+            Complete the sequence:
           </Text>
-          <View className="flex-row flex-wrap justify-between gap-y-3">
-            {options.map((opt) => (
-              <TouchableOpacity
-                key={opt.id}
-                activeOpacity={0.82}
-                onPress={() => handleSelectOption(opt)}
-                className="w-[48%] bg-white border border-[#E8E2D8] active:border-[#836EA1] p-4 rounded-3xl items-center shadow-sm min-h-[90px]"
+
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
+            {patternSequence.map((item, idx) => (
+              <View
+                key={idx}
+                className="w-16 h-16 bg-[#FAF8F5] border-2 border-[#CBD5E1] rounded-2xl items-center justify-center p-1.5"
               >
-                <Text className="text-4xl">{opt.emoji}</Text>
-                <Text 
-                  className="text-[#2D3748] text-xl font-bold mt-1"
-                  style={{ fontFamily: 'Nunito-Bold' }}
-                >
-                  {opt.label}
-                </Text>
-              </TouchableOpacity>
+                <Text className="text-3xl">{item.emoji}</Text>
+              </View>
             ))}
+
+            {/* Missing Slot */}
+            <View className="w-16 h-16 bg-[#FFF8F3] border-2 border-[#D96B27] border-dashed rounded-2xl items-center justify-center p-1.5">
+              {selectedOption ? (
+                <Text className="text-3xl">{selectedOption.emoji}</Text>
+              ) : (
+                <Text className="text-2xl font-black text-[#D96B27]">?</Text>
+              )}
+            </View>
           </View>
         </View>
-      )}
 
-      {/* Voice Assistant */}
-      <View className="items-center">
-        <VoiceButton
-          textToSpeak="Look at the repeating pattern and tap the symbol that belongs inside the question mark box."
-          label={t('voice_assist')}
-        />
-      </View>
+        {/* Result or Options */}
+        {isFinished ? (
+          <View 
+            className="p-7 rounded-[32px] border-2 items-center mb-6 bg-white"
+            style={{
+              borderColor: isCorrect ? '#CCEAD7' : '#FBDCC8',
+              shadowColor: isCorrect ? '#16704A' : '#9A431D',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.1,
+              shadowRadius: 16,
+              elevation: 3,
+            }}
+          >
+            <View className="w-20 h-20 bg-[#FEF3C7] rounded-3xl items-center justify-center mb-3 border border-[#FDE68A]">
+              <Trophy size={40} color={isCorrect ? '#16704A' : '#D96B27'} />
+            </View>
+            <Text 
+              className="text-3xl text-[#1E293B] font-bold text-center"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              {isCorrect ? t('well_done') : t('try_again')}
+            </Text>
+            <Text 
+              className="text-[#64748B] text-base font-semibold mt-1 text-center"
+              style={{ fontFamily: 'Nunito-SemiBold' }}
+            >
+              {isCorrect ? 'You solved the pattern sequence flawlessly!' : 'The pattern repeats with alternating motifs.'}
+            </Text>
+
+            <View className="flex-row gap-3 mt-6 w-full">
+              <View className="flex-1">
+                <Button
+                  title={t('play_again')}
+                  variant="primary"
+                  size="large"
+                  icon={<RefreshCw size={16} color="#FFFFFF" />}
+                  onPress={initGame}
+                />
+              </View>
+              <View className="flex-1">
+                <Button
+                  title={t('return_home')}
+                  variant="outline"
+                  size="large"
+                  icon={<Home size={16} color="#475569" />}
+                  onPress={() => router.replace('/(patient)/home')}
+                />
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View className="mb-6">
+            <Text 
+              className="text-base text-[#1E293B] font-bold mb-3 text-center"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              Tap the matching motif:
+            </Text>
+            <View 
+              className="flex-row flex-wrap justify-between"
+              style={{ rowGap: 12 }}
+            >
+              {options.map((opt) => (
+                <TouchableOpacity
+                  key={opt.id}
+                  activeOpacity={0.82}
+                  onPress={() => handleSelectOption(opt)}
+                  className="w-[48%] bg-white border-2 border-[#EDE7DD] p-3.5 rounded-2xl items-center min-h-[96px] justify-center"
+                  style={{
+                    shadowColor: '#3A3226',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 6,
+                    elevation: 1,
+                  }}
+                >
+                  <Text className="text-4xl">{opt.emoji}</Text>
+                  <Text 
+                    className="text-[#1E293B] text-sm font-bold mt-1 text-center"
+                    style={{ fontFamily: 'Nunito-Bold' }}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Voice Assistant */}
+        <View className="items-center">
+          <VoiceButton
+            compact
+            textToSpeak="Look at the repeating pattern and tap the symbol that belongs inside the question mark box."
+            label={t('voice_assist')}
+          />
+        </View>
+      </ResponsiveContainer>
     </ScrollView>
   );
 }

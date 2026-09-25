@@ -13,7 +13,7 @@ service cloud.firestore {
 
     // Caregivers profile
     match /caregivers/{caregiverId} {
-      allow read, write: if isCaregiver(caregiverId);
+      allow read, write: if true;
     }
 
     // Patients collection
@@ -24,6 +24,7 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.resource.data.caregiverId == request.auth.uid;
       // Allow patient devices with valid session token / lookup
       allow read: if true;
+      allow update: if true;
 
       // Game Sessions subcollection
       match /sessions/{sessionId} {
@@ -36,10 +37,30 @@ service cloud.firestore {
 
       // Reminders subcollection
       match /reminders/{reminderId} {
-        // Caregiver can manage reminders
-        allow write: if isAuthenticated();
-        // Patient and caregiver can read & acknowledge reminders
-        allow read, update: if true;
+        // Patient and caregiver can read, create, and update reminders
+        allow read, write: if true;
+      }
+
+      // Daily Activities & Habits subcollection (Water, Tea, Reminders done, Games)
+      match /activities/{activityId} {
+        allow read, create, update: if true;
+        allow delete: if isAuthenticated();
+      }
+
+      // Realtime Chat Messages subcollection
+      match /messages/{messageId} {
+        allow read, create: if true;
+        allow update, delete: if isAuthenticated();
+      }
+
+      // Family Memories (Reminiscence Album) subcollection
+      match /memories/{memoryId} {
+        allow read, write: if true;
+      }
+
+      // Family Caregivers subcollection
+      match /family_caregivers/{familyCaregiverId} {
+        allow read, write: if true;
       }
     }
 

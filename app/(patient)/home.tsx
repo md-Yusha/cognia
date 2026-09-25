@@ -1,37 +1,100 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { 
-  Sparkles, 
   Bell, 
-  CheckCircle, 
+  CheckCircle2, 
   LogOut,
-  Volume2,
-  ChevronRight,
-  Sun,
-  Star,
-  Heart
+  ChevronRight, 
+  MessageCircle,
+  Heart,
+  Mic,
 } from 'lucide-react-native';
-import { OfflineBadge } from '../../src/components/ui/OfflineBadge';
-import { LanguageSelector } from '../../src/components/ui/LanguageSelector';
 import { VoiceButton } from '../../src/components/ui/VoiceButton';
-import { CalmDay } from '../../src/components/CalmDay';
+import { VoiceAnswerModal } from '../../src/components/ui/VoiceAnswerModal';
+import { ResponsiveContainer } from '../../src/components/ui/ResponsiveContainer';
 import { usePatientStore } from '../../src/store/usePatientStore';
 import { speakPrompt } from '../../src/services/ttsService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 
 export default function PatientHomeScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { patient, reminders, acknowledgeReminder, recentSessions, logoutPatient } = usePatientStore();
+  const { patient, reminders, acknowledgeReminder, logoutPatient } = usePatientStore();
 
-  const patientName = patient?.name || (i18n.language === 'as' ? 'ককা / আইতা' : 'Friend');
+  const patientName = patient?.name || 'Friend';
+  const [waterDone, setWaterDone] = useState(false);
+  const [teaDone, setTeaDone] = useState(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const dateStrToday = new Date().toDateString();
+  const waterKey = `cognia_water_${dateStrToday}`;
+  const teaKey = `cognia_tea_${dateStrToday}`;
+
+  const handleVoiceAnswer = (transcript: string) => {
+    const lower = transcript.toLowerCase();
+    if (lower.includes('water') || lower.includes('drank')) {
+      markWater();
+    } else if (lower.includes('tea')) {
+      markTea();
+    } else if (lower.includes('medicine') || lower.includes('took')) {
+      if (activeReminders.length > 0) {
+        acknowledgeReminder(activeReminders[0].id);
+      }
+    }
+  };
 
   useEffect(() => {
-    const welcomeMsg = `Welcome ${patientName}. Tap any of today's calming brain activities below.`;
+    if (patient?.preferredLanguage && patient.preferredLanguage !== i18n.language) {
+      i18n.changeLanguage(patient.preferredLanguage);
+    }
+  }, [patient?.preferredLanguage]);
+
+  useEffect(() => {
+    AsyncStorage.getItem(waterKey).then((v) => setWaterDone(v === 'yes'));
+    AsyncStorage.getItem(teaKey).then((v) => setTeaDone(v === 'yes'));
+    const welcomeMsg = t('welcome_speech', { name: patientName });
     speakPrompt(welcomeMsg, (i18n.language || 'en') as any);
-  }, [patientName]);
+  }, [patientName, i18n.language]);
+
+  const markWater = async () => {
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+    setWaterDone(true);
+    await AsyncStorage.setItem(waterKey, 'yes');
+    speakPrompt(t('water_speech'), (i18n.language || 'en') as any);
+
+    if (patient) {
+      const { logPatientActivity } = await import('../../src/services/activityService');
+      logPatientActivity({
+        patientId: patient.id,
+        type: 'hydration',
+        title: 'Drank Daily Water',
+        details: 'Confirmed 1 fresh glass of water.',
+        icon: '💧',
+        whyClinical: 'Vital hydration: Drinking water promotes brain metabolic circulation and prevents dehydration-induced disorientation.',
+      }).catch(() => {});
+    }
+  };
+
+  const markTea = async () => {
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+    setTeaDone(true);
+    await AsyncStorage.setItem(teaKey, 'yes');
+    speakPrompt('Wonderful! Enjoy your warm cup of Assam tea.', (i18n.language || 'en') as any);
+
+    if (patient) {
+      const { logPatientActivity } = await import('../../src/services/activityService');
+      logPatientActivity({
+        patientId: patient.id,
+        type: 'tea',
+        title: 'Enjoyed Daily Tea',
+        details: 'Had warm cup of traditional tea.',
+        icon: '☕',
+        whyClinical: 'Sensory grounding & morning routine: Traditional tea ritual triggers positive emotional recall and daily calming.',
+      }).catch(() => {});
+    }
+  };
 
   const handleLogout = async () => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
@@ -40,374 +103,387 @@ export default function PatientHomeScreen() {
   };
 
   const activeReminders = reminders.filter((r) => r.isActive && !r.lastAcknowledgedAt);
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-  const completedToday = new Set(
-    recentSessions
-      .filter((session) => session.timestamp >= startOfDay.getTime())
-      .map((session) => session.gameType)
-  ).size;
+  const todayName = new Date().toLocaleDateString(undefined, { weekday: 'long' });
 
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: '#FAF7F2' }}
-      contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16, paddingBottom: 60 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 50 }}
+      keyboardShouldPersistTaps="handled"
     >
-      {/* Top Bar */}
-      <View className="flex-row items-center justify-between pt-6 mb-3">
-        <OfflineBadge />
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={handleLogout}
-          className="flex-row items-center bg-white border border-[#E8E2D8] px-4 py-1.5 rounded-full shadow-sm"
-        >
-          <LogOut size={14} color="#64748B" />
-          <Text 
-            className="text-[#475569] font-bold ml-1.5 text-lg"
-            style={{ fontFamily: 'Nunito-Bold' }}
-          >
-            {t('logout')}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Serene Greeting Card */}
-      <View 
-        className="bg-[#EBF4EE] rounded-[32px] p-6 border border-[#CDE3D5] mb-4"
-        style={{
-          shadowColor: '#3D6C4E',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.08,
-          shadowRadius: 14,
-          elevation: 2,
-        }}
-      >
-        <View className="flex-row items-center justify-between mb-2">
-          <View className="flex-row items-center flex-1 mr-2">
-            <View className="w-10 h-10 rounded-full bg-white/80 items-center justify-center mr-2.5 border border-[#CDE3D5]">
-              <Sun size={24} color="#D97706" />
-            </View>
-            <Text 
-              className="text-4xl text-[#2C503A] flex-1"
-              style={{ fontFamily: 'PatrickHand' }}
-            >
-              {t('welcome', { name: patientName })}
-            </Text>
-          </View>
+      <ResponsiveContainer maxWidth="sm">
+        {/* Top Minimal Bar */}
+        <View className="flex-row items-center justify-end pt-4 mb-4">
           <TouchableOpacity
-            onPress={() => speakPrompt(`Welcome ${patientName}. Tap any activity card below to start playing.`, i18n.language as any)}
-            className="p-3 bg-white rounded-full border border-[#C2DEC8] shadow-sm"
+            activeOpacity={0.8}
+            onPress={handleLogout}
+            className="flex-row items-center bg-white border border-[#CBD5E1] px-3.5 py-1.5 rounded-full"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
           >
-            <Volume2 size={20} color="#3D6C4E" />
+            <LogOut size={13} color="#64748B" />
+            <Text 
+              className="text-[#64748B] font-bold ml-1.5 text-xs"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              {t('exit')}
+            </Text>
           </TouchableOpacity>
         </View>
 
+        {/* Minimal Greeting Header */}
+        <View className="mb-4">
+          <Text 
+            className="text-xs text-[#16704A] font-bold uppercase tracking-wider mb-0.5"
+            style={{ fontFamily: 'Nunito-Bold' }}
+          >
+            {todayName} • {t('safe_at_home')}
+          </Text>
+          <View className="flex-row items-center justify-between">
+            <Text 
+              className="text-2xl text-[#1E293B] font-bold flex-1 mr-2"
+              style={{ fontFamily: 'Nunito-Bold' }}
+              numberOfLines={1}
+            >
+              {t('welcome', { name: patientName })}
+            </Text>
+            <View className="flex-row items-center gap-1.5">
+              <TouchableOpacity
+                onPress={() => setIsVoiceModalOpen(true)}
+                activeOpacity={0.82}
+                className="flex-row items-center bg-[#EBF7F0] border border-[#86EFAC] px-3 py-1.5 rounded-full"
+              >
+                <Mic size={14} color="#16704A" />
+                <Text className="text-xs font-bold text-[#16704A] ml-1">Speak</Text>
+              </TouchableOpacity>
+              <VoiceButton
+                compact
+                textToSpeak={t('welcome_speech', { name: patientName })}
+                label={t('listen')}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Daily Hydration Pill (Compact) */}
+        <View 
+          className={`p-3.5 rounded-2xl border mb-3 flex-row items-center justify-between ${
+            waterDone ? 'bg-[#F0FDF4] border-[#BBF7D0]' : 'bg-[#FFF8F3] border-[#FBDCC8]'
+          }`}
+        >
+          <View className="flex-row items-center flex-1 mr-2">
+            <Text className="text-2xl mr-2.5">{waterDone ? '💧' : '🫖'}</Text>
+            <View className="flex-1">
+              <Text className="text-[#1E293B] text-sm font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+                {waterDone ? t('hydration_done') : t('hydration_question')}
+              </Text>
+              <Text className="text-[#64748B] text-xs font-semibold" style={{ fontFamily: 'Nunito-SemiBold' }}>
+                {waterDone ? t('hydration_done_sub') : t('hydration_subtitle')}
+              </Text>
+            </View>
+          </View>
+
+          {!waterDone ? (
+            <TouchableOpacity
+              onPress={markWater}
+              activeOpacity={0.84}
+              className="bg-[#16704A] px-3 py-1.5 rounded-full flex-row items-center"
+            >
+              <CheckCircle2 size={13} color="#FFFFFF" />
+              <Text className="text-white text-xs font-bold ml-1" style={{ fontFamily: 'Nunito-Bold' }}>
+                {t('i_drank')}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View className="bg-[#DCFCE7] px-2.5 py-1 rounded-full border border-[#86EFAC] flex-row items-center">
+              <CheckCircle2 size={12} color="#16A34A" />
+              <Text className="text-[#15803D] text-xs font-bold ml-1">Drank</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Daily Assam Tea Check-in Pill */}
+        <View 
+          className={`p-3.5 rounded-2xl border mb-4 flex-row items-center justify-between ${
+            teaDone ? 'bg-[#F0FDF4] border-[#BBF7D0]' : 'bg-[#FFF9F5] border-[#FDE6D2]'
+          }`}
+        >
+          <View className="flex-row items-center flex-1 mr-2">
+            <Text className="text-2xl mr-2.5">☕</Text>
+            <View className="flex-1">
+              <Text className="text-[#1E293B] text-sm font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+                {teaDone ? 'Tea Time Enjoyed' : 'Have you had your warm tea today?'}
+              </Text>
+              <Text className="text-[#64748B] text-xs font-semibold" style={{ fontFamily: 'Nunito-SemiBold' }}>
+                {teaDone ? 'Traditional tea habit logged' : 'Relax with warm morning or afternoon tea'}
+              </Text>
+            </View>
+          </View>
+
+          {!teaDone ? (
+            <TouchableOpacity
+              onPress={markTea}
+              activeOpacity={0.84}
+              className="bg-[#D96B27] px-3 py-1.5 rounded-full flex-row items-center"
+            >
+              <CheckCircle2 size={13} color="#FFFFFF" />
+              <Text className="text-white text-xs font-bold ml-1" style={{ fontFamily: 'Nunito-Bold' }}>
+                Had Tea
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View className="bg-[#DCFCE7] px-2.5 py-1 rounded-full border border-[#86EFAC] flex-row items-center">
+              <CheckCircle2 size={12} color="#16A34A" />
+              <Text className="text-[#15803D] text-xs font-bold ml-1">Enjoyed</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Active Reminder (if any) */}
+        {activeReminders.length > 0 ? (
+          <View 
+            className="bg-white border-2 border-[#FBDCC8] p-3.5 rounded-2xl mb-4"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1 mr-2">
+                <View className="w-8 h-8 rounded-full bg-[#FFF0E6] items-center justify-center mr-2.5">
+                  <Bell size={15} color="#D96B27" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-[#1E293B] text-sm font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+                    {activeReminders[0].title}
+                  </Text>
+                  <Text className="text-[#D96B27] text-xs font-semibold" style={{ fontFamily: 'Nunito-SemiBold' }}>
+                    ⏰ {activeReminders[0].time} • {activeReminders[0].dosageOrDetails}
+                  </Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => {
+                  try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+                  acknowledgeReminder(activeReminders[0].id);
+                  speakPrompt(t('reminder_done_speech'), (i18n.language || 'en') as any);
+                }}
+                className="bg-[#16704A] px-3 py-1.5 rounded-full"
+              >
+                <Text className="text-white text-xs font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+                  {t('done')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : null}
+
+        {/* 4 Cognitive Games (Core Focus) */}
         <Text 
-          className="text-[#4A7C59] text-xl font-semibold"
-          style={{ fontFamily: 'Nunito-SemiBold' }}
+          className="text-lg text-[#1E293B] font-bold mb-3 px-0.5"
+          style={{ fontFamily: 'Nunito-Bold' }}
         >
           {t('daily_activities')}
         </Text>
 
-        {/* Today's Gentle Progress */}
-        <View className="bg-white/80 rounded-2xl p-3 mt-3 flex-row items-center justify-between border border-[#CDE3D5]/60">
+        <View className="gap-3 mb-5">
+          {/* Game 1: Rhino Memory Match */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => {
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+              router.push('/(patient)/games/memory_match');
+            }}
+            className="bg-white border-2 border-[#CCEAD7] rounded-2xl p-4 flex-row items-center justify-between"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <View className="w-12 h-12 bg-[#F0F9F4] rounded-xl items-center justify-center mr-3 border border-[#BDE5CB] p-1.5">
+              <Text className="text-3xl">🦏</Text>
+            </View>
+            <View className="flex-1 mr-2">
+              <Text className="text-base text-[#1E293B] font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+                {t('game_memory')}
+              </Text>
+              <Text className="text-[#64748B] text-xs mt-0.5 font-semibold" style={{ fontFamily: 'Nunito-SemiBold' }}>
+                {t('game_memory_desc')}
+              </Text>
+            </View>
+            <ChevronRight size={18} color="#16704A" />
+          </TouchableOpacity>
+
+          {/* Game 2: Daily Routine */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => {
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+              router.push('/(patient)/games/daily_routine');
+            }}
+            className="bg-white border-2 border-[#FBDCC8] rounded-2xl p-4 flex-row items-center justify-between"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <View className="w-12 h-12 bg-[#FFF8F3] rounded-xl items-center justify-center mr-3 border border-[#FAD0B6] p-1.5">
+              <Text className="text-3xl">☕</Text>
+            </View>
+            <View className="flex-1 mr-2">
+              <Text className="text-base text-[#1E293B] font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+                {t('game_routine')}
+              </Text>
+              <Text className="text-[#64748B] text-xs mt-0.5 font-semibold" style={{ fontFamily: 'Nunito-SemiBold' }}>
+                {t('game_routine_desc')}
+              </Text>
+            </View>
+            <ChevronRight size={18} color="#D96B27" />
+          </TouchableOpacity>
+
+          {/* Game 3: Pattern Match */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => {
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+              router.push('/(patient)/games/pattern_match');
+            }}
+            className="bg-white border-2 border-[#E3D7EE] rounded-2xl p-4 flex-row items-center justify-between"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <View className="w-12 h-12 bg-[#F8F6FB] rounded-xl items-center justify-center mr-3 border border-[#DDD0E8] p-1.5">
+              <Text className="text-3xl">🎋</Text>
+            </View>
+            <View className="flex-1 mr-2">
+              <Text className="text-base text-[#1E293B] font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+                {t('game_pattern')}
+              </Text>
+              <Text className="text-[#64748B] text-xs mt-0.5 font-semibold" style={{ fontFamily: 'Nunito-SemiBold' }}>
+                {t('game_pattern_desc')}
+              </Text>
+            </View>
+            <ChevronRight size={18} color="#6A4690" />
+          </TouchableOpacity>
+
+          {/* Game 4: Focus & Tap */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => {
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+              router.push('/(patient)/games/focus_tap');
+            }}
+            className="bg-white border-2 border-[#CCE7EF] rounded-2xl p-4 flex-row items-center justify-between"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <View className="w-12 h-12 bg-[#F1F8FA] rounded-xl items-center justify-center mr-3 border border-[#B8DFEA] p-1.5">
+              <Text className="text-3xl">🍃</Text>
+            </View>
+            <View className="flex-1 mr-2">
+              <Text className="text-base text-[#1E293B] font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+                {t('game_focus')}
+              </Text>
+              <Text className="text-[#64748B] text-xs mt-0.5 font-semibold" style={{ fontFamily: 'Nunito-SemiBold' }}>
+                {t('game_focus_desc')}
+              </Text>
+            </View>
+            <ChevronRight size={18} color="#216174" />
+          </TouchableOpacity>
+
+          {/* Game 5: Family Memory Album (Reminiscence) */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => {
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+              router.push('/(patient)/games/reminiscence');
+            }}
+            className="bg-white border-2 border-[#FFE4E6] rounded-2xl p-4 flex-row items-center justify-between"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <View className="w-12 h-12 bg-[#FFF1F2] rounded-xl items-center justify-center mr-3 border border-[#FECDD3] p-1.5">
+              <Text className="text-3xl">🌸</Text>
+            </View>
+            <View className="flex-1 mr-2">
+              <View className="flex-row items-center">
+                <Text className="text-base text-[#1E293B] font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+                  Family Memory Album
+                </Text>
+                <View className="bg-[#FFE4E6] px-2 py-0.5 rounded-full ml-2">
+                  <Text className="text-[10px] font-bold text-[#E11D48]">NEW</Text>
+                </View>
+              </View>
+              <Text className="text-[#64748B] text-xs mt-0.5 font-semibold" style={{ fontFamily: 'Nunito-SemiBold' }}>
+                Look at familiar family photos and remember loving moments
+              </Text>
+            </View>
+            <ChevronRight size={18} color="#BE123C" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Minimal Footer: Chat with Family */}
+        <TouchableOpacity
+          activeOpacity={0.82}
+          onPress={() => router.push('/(patient)/chat')}
+          className="bg-white border border-[#CBD5E1] rounded-2xl p-3.5 flex-row items-center justify-between"
+          style={{
+            shadowColor: '#000000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}
+        >
           <View className="flex-row items-center">
-            <Star size={18} color="#D97706" />
-            <Text 
-              className="text-[#2C503A] font-bold text-lg ml-2"
-              style={{ fontFamily: 'Nunito-Bold' }}
-            >
-              Today's Gentle Progress: {completedToday} of 4 activities
+            <MessageCircle size={18} color="#16704A" />
+            <Text className="text-sm text-[#1E293B] font-bold ml-2" style={{ fontFamily: 'Nunito-Bold' }}>
+              {t('message_family')}
             </Text>
           </View>
-          <View className="w-16 h-2 bg-[#E2EEE5] rounded-full overflow-hidden">
-            <View 
-              className="h-full bg-[#4A7C59] rounded-full" 
-              style={{ width: `${(completedToday / 4) * 100}%` }}
-            />
-          </View>
-        </View>
-      </View>
-
-      <CalmDay patientName={patientName} />
-
-      <TouchableOpacity
-        onPress={() => router.push('/(patient)/chat')}
-        className="bg-[#FDF3ED] border border-[#F4D8C9] rounded-[28px] p-5 mb-4"
-      >
-        <Text className="text-[#8A4226] text-4xl" style={{ fontFamily: 'PatrickHand' }}>Talk with family</Text>
-        <Text className="text-[#597362] text-xl mt-1" style={{ fontFamily: 'Nunito-SemiBold' }}>
-          Send a message. Voice opens when your caregiver is in the app.
-        </Text>
-      </TouchableOpacity>
-
-      {/* Language Bar */}
-      <View className="bg-white rounded-2xl p-2 border border-[#EFEBE4] shadow-sm mb-4">
-        <LanguageSelector />
-      </View>
-
-      {/* Daily Reminders Card (if any active) */}
-      {activeReminders.length > 0 && (
-        <View 
-          className="bg-[#FDF3ED] rounded-[30px] p-5 border border-[#F5D8C9] mb-6"
-          style={{
-            shadowColor: '#8A4226',
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.06,
-            shadowRadius: 10,
-            elevation: 2,
-          }}
-        >
-          <View className="flex-row items-center justify-between mb-3">
-            <View className="flex-row items-center">
-              <View className="w-9 h-9 bg-white rounded-full items-center justify-center mr-2 border border-[#F5D8C9]">
-                <Bell size={18} color="#A95838" />
-              </View>
-              <Text 
-                className="text-3xl text-[#864127]"
-                style={{ fontFamily: 'PatrickHand' }}
-              >
-                {t('reminders_title')}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={() => router.push('/(patient)/reminders')}>
-              <Text 
-                className="text-[#A95838] font-bold text-lg underline"
-                style={{ fontFamily: 'Nunito-Bold' }}
-              >
-                View All
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {activeReminders.slice(0, 2).map((item) => (
-            <View
-              key={item.id}
-              className="bg-white border border-[#F4D8C9] p-4 rounded-2xl mb-2 flex-row items-center justify-between shadow-sm"
-            >
-              <View className="flex-1 mr-3">
-                <Text 
-                  className="text-[#2D3748] text-xl font-bold"
-                  style={{ fontFamily: 'Nunito-Bold' }}
-                >
-                  {item.title}
-                </Text>
-                <Text 
-                  className="text-[#C87453] text-lg font-semibold mt-0.5"
-                  style={{ fontFamily: 'Nunito-SemiBold' }}
-                >
-                  ⏰ {item.time} • {item.dosageOrDetails}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => {
-                  try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
-                  acknowledgeReminder(item.id);
-                  speakPrompt("Thank you! Marked as done.", i18n.language as any);
-                }}
-                className="bg-[#4A7C59] px-4 py-2 rounded-full flex-row items-center shadow-sm"
-              >
-                <CheckCircle size={15} color="#FFFFFF" />
-                <Text 
-                  className="text-white font-bold ml-1.5 text-lg"
-                  style={{ fontFamily: 'Nunito-Bold' }}
-                >
-                  Done
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      )}
-
-      {/* 4 Cultural Cognitive Games Header */}
-      <View className="flex-row items-center justify-between mb-3 mt-1">
-        <Text 
-          className="text-4xl text-[#2B3A30]"
-          style={{ fontFamily: 'PatrickHand' }}
-        >
-          {t('games_title')}
-        </Text>
-        <Sparkles size={20} color="#4A7C59" />
-      </View>
-
-      <View className="gap-3.5">
-        {/* Game 1: Rhino Memory Match */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => {
-            try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-            router.push('/(patient)/games/memory_match');
-          }}
-          className="bg-[#EBF4EE] border border-[#CDE3D5] rounded-[30px] p-5 shadow-sm flex-row items-center justify-between"
-          style={{
-            shadowColor: '#3D6C4E',
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.06,
-            shadowRadius: 10,
-            elevation: 2,
-          }}
-        >
-          <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center mr-4 border border-[#C2DEC8] shadow-sm">
-            <Text className="text-4xl">🦏</Text>
-          </View>
-          <View className="flex-1 mr-2">
-            <View className="bg-white/80 self-start px-2 py-0.5 rounded-full mb-1 border border-[#C2DEC8]">
-              <Text 
-                className="text-[#2C503A] text-[10px] font-bold uppercase tracking-wider"
-                style={{ fontFamily: 'Nunito-Bold' }}
-              >
-                Assam Wildlife
-              </Text>
-            </View>
-            <Text 
-              className="text-3xl text-[#274733]"
-              style={{ fontFamily: 'PatrickHand' }}
-            >
-              {t('game_memory')}
-            </Text>
-            <Text 
-              className="text-[#437756] text-lg mt-0.5 font-semibold"
-              style={{ fontFamily: 'Nunito-SemiBold' }}
-            >
-              Find matching picture pairs of Kaziranga animals & tea pots.
-            </Text>
-          </View>
-          <ChevronRight size={24} color="#335D43" />
+          <ChevronRight size={16} color="#94A3B8" />
         </TouchableOpacity>
 
-        {/* Game 2: NER Daily Routine Recall */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => {
-            try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-            router.push('/(patient)/games/daily_routine');
-          }}
-          className="bg-[#FDF3ED] border border-[#F4D8C9] rounded-[30px] p-5 shadow-sm flex-row items-center justify-between"
-          style={{
-            shadowColor: '#8A4226',
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.06,
-            shadowRadius: 10,
-            elevation: 2,
-          }}
-        >
-          <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center mr-4 border border-[#ECC0AC] shadow-sm">
-            <Text className="text-4xl">☕</Text>
-          </View>
-          <View className="flex-1 mr-2">
-            <View className="bg-white/80 self-start px-2 py-0.5 rounded-full mb-1 border border-[#ECC0AC]">
-              <Text 
-                className="text-[#864127] text-[10px] font-bold uppercase tracking-wider"
-                style={{ fontFamily: 'Nunito-Bold' }}
-              >
-                Morning Schedule
-              </Text>
-            </View>
-            <Text 
-              className="text-3xl text-[#864127]"
-              style={{ fontFamily: 'PatrickHand' }}
-            >
-              {t('game_routine')}
-            </Text>
-            <Text 
-              className="text-[#A95838] text-lg mt-0.5 font-semibold"
-              style={{ fontFamily: 'Nunito-SemiBold' }}
-            >
-              Arrange morning tea, medicine, and tasks in proper sequence.
-            </Text>
-          </View>
-          <ChevronRight size={24} color="#864127" />
-        </TouchableOpacity>
-
-        {/* Game 3: Bamboo Pattern Match */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => {
-            try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-            router.push('/(patient)/games/pattern_match');
-          }}
-          className="bg-[#F5F0F8] border border-[#DDD3E7] rounded-[30px] p-5 shadow-sm flex-row items-center justify-between"
-          style={{
-            shadowColor: '#573D6E',
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.06,
-            shadowRadius: 10,
-            elevation: 2,
-          }}
-        >
-          <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center mr-4 border border-[#C3B4D3] shadow-sm">
-            <Text className="text-4xl">🎋</Text>
-          </View>
-          <View className="flex-1 mr-2">
-            <View className="bg-white/80 self-start px-2 py-0.5 rounded-full mb-1 border border-[#C3B4D3]">
-              <Text 
-                className="text-[#503D68] text-[10px] font-bold uppercase tracking-wider"
-                style={{ fontFamily: 'Nunito-Bold' }}
-              >
-                Handloom Patterns
-              </Text>
-            </View>
-            <Text 
-              className="text-3xl text-[#503D68]"
-              style={{ fontFamily: 'PatrickHand' }}
-            >
-              {t('game_pattern')}
-            </Text>
-            <Text 
-              className="text-[#675283] text-lg mt-0.5 font-semibold"
-              style={{ fontFamily: 'Nunito-SemiBold' }}
-            >
-              Complete the missing traditional handloom motif.
-            </Text>
-          </View>
-          <ChevronRight size={24} color="#503D68" />
-        </TouchableOpacity>
-
-        {/* Game 4: Tea Garden Focus & Tap */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => {
-            try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-            router.push('/(patient)/games/focus_tap');
-          }}
-          className="bg-[#EDF6F8] border border-[#C4E3EB] rounded-[30px] p-5 shadow-sm flex-row items-center justify-between"
-          style={{
-            shadowColor: '#2C5E6E',
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.06,
-            shadowRadius: 10,
-            elevation: 2,
-          }}
-        >
-          <View className="w-16 h-16 bg-white rounded-2xl items-center justify-center mr-4 border border-[#9ECFDA] shadow-sm">
-            <Text className="text-4xl">🍃</Text>
-          </View>
-          <View className="flex-1 mr-2">
-            <View className="bg-white/80 self-start px-2 py-0.5 rounded-full mb-1 border border-[#9ECFDA]">
-              <Text 
-                className="text-[#2C5E6E] text-[10px] font-bold uppercase tracking-wider"
-                style={{ fontFamily: 'Nunito-Bold' }}
-              >
-                Focus & Concentration
-              </Text>
-            </View>
-            <Text 
-              className="text-3xl text-[#2C5E6E]"
-              style={{ fontFamily: 'PatrickHand' }}
-            >
-              {t('game_focus')}
-            </Text>
-            <Text 
-              className="text-[#43798A] text-lg mt-0.5 font-semibold"
-              style={{ fontFamily: 'Nunito-SemiBold' }}
-            >
-              Tap the fresh green tea leaves as they appear in the garden.
-            </Text>
-          </View>
-          <ChevronRight size={24} color="#2C5E6E" />
-        </TouchableOpacity>
-      </View>
+        {/* Voice Answering Modal for Elder */}
+        <VoiceAnswerModal
+          visible={isVoiceModalOpen}
+          onClose={() => setIsVoiceModalOpen(false)}
+          onAnswer={handleVoiceAnswer}
+          language={(patient?.preferredLanguage || 'en') as any}
+          promptQuestion={`Hello ${patientName}, how are you feeling? Speak or tap to answer!`}
+          quickPhrases={['Yes, I took medicine', 'I drank my water', 'I had warm Assam tea', 'I feel good today']}
+        />
+      </ResponsiveContainer>
     </ScrollView>
   );
 }

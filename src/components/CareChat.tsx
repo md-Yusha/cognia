@@ -1,191 +1,174 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Mic, Send } from 'lucide-react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { beatPresence, CareMessage, fetchMessages, pollVoiceClip, sendMessage, sendVoiceClip } from '../services/careApi';
-
-const chatKey = (patientId: string) => `cognia_chat_${patientId}`;
-
-async function readLocal(patientId: string): Promise<CareMessage[]> {
-  try {
-    const raw = await AsyncStorage.getItem(chatKey(patientId));
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-async function writeLocal(patientId: string, messages: CareMessage[]) {
-  await AsyncStorage.setItem(chatKey(patientId), JSON.stringify(messages.slice(-80)));
-}
+import { ArrowLeft, Mic, Send, MessageCircle } from 'lucide-react-native';
+import { CareMessage, subscribeToChatMessages, sendChatMessage } from '../services/chatService';
+import { ResponsiveContainer } from './ui/ResponsiveContainer';
+import * as Haptics from 'expo-haptics';
 
 type Role = 'patient' | 'caregiver';
-
-function fileToBase64(uri: string) {
-  return fetch(uri)
-    .then((response) => response.blob())
-    .then((blob) => new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || '').split(',')[1] || '');
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(blob);
-    }));
-}
 
 export function CareChat({ patientId, role, title }: { patientId: string; role: Role; title: string }) {
   const router = useRouter();
   const [messages, setMessages] = useState<CareMessage[]>([]);
   const [draft, setDraft] = useState('');
-  const [online, setOnline] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const [note, setNote] = useState('');
-  const heard = React.useRef(0);
+  const [isSending, setIsSending] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    let stop = false;
-    const tick = async () => {
-      const local = await readLocal(patientId);
-      if (!stop && local.length) setMessages(local);
-      try {
-        const presence = await beatPresence(patientId, role);
-        if (!stop) setOnline(role === 'patient' ? presence.caregiverOnline : presence.patientOnline);
-        const next = await fetchMessages(patientId);
-        const merged = [...local];
-        for (const message of next) {
-          if (!merged.some((item) => item.id === message.id)) merged.push(message);
-        }
-        merged.sort((a, b) => a.createdAt - b.createdAt);
-        if (!stop) setMessages(merged);
-        await writeLocal(patientId, merged);
-        if (!stop) setNote('');
-      } catch {
-        if (!stop) setNote('Showing messages saved on this phone.');
-      }
-      try {
-        const voice = await pollVoiceClip(patientId, role);
-        if (voice.clip?.audioBase64 && voice.clip.at !== heard.current) {
-          heard.current = voice.clip.at;
-          const { Audio } = await import('expo-av');
-          const sound = new Audio.Sound();
-          await sound.loadAsync({ uri: `data:audio/mp4;base64,${voice.clip.audioBase64}` });
-          await sound.playAsync();
-        }
-      } catch {}
-    };
-    tick();
-    const id = setInterval(tick, 4000);
-    return () => {
-      stop = true;
-      clearInterval(id);
-    };
-  }, [patientId, role]);
+    if (!patientId) return;
+
+    // Realtime Firestore subscription
+    const unsubscribe = subscribeToChatMessages(patientId, (incoming) => {
+      setMessages(incoming);
+      // Auto-scroll to bottom on new messages
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    });
+
+    return () => unsubscribe();
+  }, [patientId]);
 
   const submit = async () => {
     const body = draft.trim();
-    if (!body) return;
-    setDraft('');
-    const saved: CareMessage = {
-      id: `local_${Date.now()}`,
-      patientId,
-      sender: role,
-      body,
-      createdAt: Date.now(),
-    };
-    const next = [...messages, saved];
-    setMessages(next);
-    await writeLocal(patientId, next);
-    try {
-      const remote = await sendMessage(patientId, role, body);
-      const withRemote = next.map((item) => (item.id === saved.id ? remote : item));
-      setMessages(withRemote);
-      await writeLocal(patientId, withRemote);
-      setNote('');
-    } catch {
-      setNote('Saved on this phone. It will send when the home server answers.');
-    }
-  };
+    if (!body || isSending) return;
 
-  const toggleMic = async () => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    setDraft('');
+    setIsSending(true);
+
     try {
-      if (!online) {
-        setNote('Voice opens when the other person is in the app.');
-        return;
-      }
-      const { Audio } = await import('expo-av');
-      if (!recording) {
-        const permission = await Audio.requestPermissionsAsync();
-        if (!permission.granted) {
-          setNote('Microphone permission is needed for voice chat.');
-          return;
-        }
-        await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-        const rec = new Audio.Recording();
-        await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.LOW_QUALITY);
-        await rec.startAsync();
-        (global as any).__cogniaRec = rec;
-        setRecording(true);
-        setNote('Listening… tap again to send.');
-        return;
-      }
-      const rec = (global as any).__cogniaRec as { stopAndUnloadAsync: () => Promise<void>; getURI: () => string | null } | undefined;
-      setRecording(false);
-      if (!rec) return;
-      await rec.stopAndUnloadAsync();
-      const uri = rec.getURI();
-      (global as any).__cogniaRec = null;
-      if (!uri) return;
-      const audioBase64 = await fileToBase64(uri);
-      await sendVoiceClip(patientId, role, audioBase64);
-      setNote('Voice note sent.');
-    } catch {
-      setRecording(false);
-      setNote('Voice note could not be sent. Text chat still works.');
+      await sendChatMessage(patientId, role, body);
+    } catch (e) {
+      console.warn('Message send error:', e);
+    } finally {
+      setIsSending(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#FAF7F2' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={{ paddingTop: 54, paddingHorizontal: 20, paddingBottom: 12, flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 10, backgroundColor: 'white', borderRadius: 999, marginRight: 12 }}>
-          <ArrowLeft size={20} color="#2C503A" />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: 'PatrickHand', fontSize: 32, color: '#2B3A30' }}>{title}</Text>
-          <Text style={{ fontFamily: 'Nunito-Bold', fontSize: 16, color: online ? '#2C503A' : '#8C8274' }}>
-            {online ? 'Online — voice chat is open' : 'Text chat is ready'}
-          </Text>
-        </View>
-      </View>
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 20, paddingBottom: 12 }}
-        renderItem={({ item }) => {
-          const mine = item.sender === role;
-          return (
-            <View style={{ alignSelf: mine ? 'flex-end' : 'flex-start', backgroundColor: mine ? '#3D6C4E' : 'white', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 10, maxWidth: '82%' }}>
-              <Text style={{ color: mine ? 'white' : '#2B3A30', fontFamily: 'Nunito-SemiBold', fontSize: 18 }}>{item.body}</Text>
+    <KeyboardAvoidingView 
+      style={{ flex: 1, backgroundColor: '#FAF7F2' }} 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ResponsiveContainer maxWidth="md" className="flex-1">
+        {/* Header */}
+        <View className="pt-12 px-5 pb-3 flex-row items-center border-b border-[#E2DDD5] bg-white">
+          <TouchableOpacity 
+            onPress={() => router.back()} 
+            className="w-10 h-10 bg-white border border-[#CBD5E1] rounded-full items-center justify-center mr-3"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <ArrowLeft size={18} color="#1E293B" />
+          </TouchableOpacity>
+
+          <View className="flex-1">
+            <Text className="text-xl text-[#1E293B] font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+              {title}
+            </Text>
+            <View className="flex-row items-center mt-0.5">
+              <View className="w-2 h-2 rounded-full mr-1.5 bg-[#1F8A5D]" />
+              <Text 
+                className="text-xs font-bold text-[#16704A]"
+                style={{ fontFamily: 'Nunito-Bold' }}
+              >
+                Direct Realtime Connection
+              </Text>
             </View>
-          );
-        }}
-      />
-      {note ? <Text style={{ paddingHorizontal: 20, color: '#8A4226', fontFamily: 'Nunito-SemiBold', fontSize: 15 }}>{note}</Text> : null}
-      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16, gap: 10 }}>
-        <TouchableOpacity onPress={toggleMic} style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: recording ? '#C87453' : '#EBF4EE', alignItems: 'center', justifyContent: 'center' }}>
-          <Mic size={24} color={recording ? 'white' : '#2C503A'} />
-        </TouchableOpacity>
-        <TextInput
-          value={draft}
-          onChangeText={setDraft}
-          placeholder="Write a message"
-          placeholderTextColor="#8C8274"
-          style={{ flex: 1, minHeight: 56, backgroundColor: 'white', borderRadius: 20, paddingHorizontal: 16, fontSize: 18, fontFamily: 'Nunito-SemiBold', color: '#2B3A30' }}
-        />
-        <TouchableOpacity onPress={submit} style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#3D6C4E', alignItems: 'center', justifyContent: 'center' }}>
-          <Send size={22} color="white" />
-        </TouchableOpacity>
-      </View>
+          </View>
+        </View>
+
+        {/* Message Feed */}
+        {messages.length === 0 ? (
+          <View className="flex-1 justify-center items-center p-6">
+            <View className="w-16 h-16 rounded-3xl bg-[#EAF7EE] border border-[#BDE5CB] items-center justify-center mb-3">
+              <MessageCircle size={30} color="#16704A" />
+            </View>
+            <Text className="text-lg font-bold text-[#1E293B] text-center" style={{ fontFamily: 'Nunito-Bold' }}>
+              {role === 'caregiver' ? 'Message your loved one' : 'Message your family'}
+            </Text>
+            <Text className="text-xs text-[#64748B] text-center mt-1 font-semibold max-w-xs leading-relaxed" style={{ fontFamily: 'Nunito-SemiBold' }}>
+              Send short comforting notes, voice prompts, and daily updates. Messages arrive in real-time.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ padding: 18, paddingBottom: 16 }}
+            renderItem={({ item }) => {
+              const mine = item.sender === role;
+              return (
+                <View 
+                  className={`mb-2.5 max-w-[82%] p-4 rounded-3xl ${
+                    mine 
+                      ? 'self-end bg-[#16704A] rounded-br-sm' 
+                      : 'self-start bg-white border border-[#E2DDD5] rounded-bl-sm'
+                  }`}
+                  style={{
+                    shadowColor: mine ? '#16704A' : '#473E35',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: mine ? 0.15 : 0.04,
+                    shadowRadius: 6,
+                    elevation: 1,
+                  }}
+                >
+                  <Text 
+                    className={`text-base leading-relaxed font-semibold ${mine ? 'text-white' : 'text-[#1E293B]'}`}
+                    style={{ fontFamily: 'Nunito-SemiBold' }}
+                  >
+                    {item.body}
+                  </Text>
+                  <Text 
+                    className={`text-[10px] mt-1 text-right font-medium ${mine ? 'text-white/70' : 'text-[#94A3B8]'}`}
+                  >
+                    {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </View>
+              );
+            }}
+          />
+        )}
+
+        {/* Chat Input Bar */}
+        <View className="flex-row items-center p-3.5 gap-2.5 bg-white border-t border-[#E2DDD5]">
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={role === 'caregiver' ? 'Send a comforting message to patient…' : 'Type a message to your family…'}
+            placeholderTextColor="#94A3B8"
+            className="flex-1 min-h-[48px] bg-[#FAF8F5] border border-[#CBD5E1] rounded-2xl px-4 text-base text-[#1E293B]"
+            style={{ fontFamily: 'Nunito-SemiBold' }}
+            returnKeyType="send"
+            onSubmitEditing={submit}
+          />
+
+          <TouchableOpacity 
+            onPress={submit} 
+            activeOpacity={0.85}
+            disabled={!draft.trim() || isSending}
+            className="w-12 h-12 rounded-2xl bg-[#16704A] items-center justify-center"
+            style={{
+              opacity: draft.trim() ? 1 : 0.5,
+              shadowColor: '#16704A',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.15,
+              shadowRadius: 3,
+              elevation: 1,
+            }}
+          >
+            <Send size={18} color="white" />
+          </TouchableOpacity>
+        </View>
+      </ResponsiveContainer>
     </KeyboardAvoidingView>
   );
 }

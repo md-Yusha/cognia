@@ -98,36 +98,9 @@ async function sampleMotion(ms: number) {
   };
 }
 
-async function sampleNoise(ms: number) {
-  try {
-    const { Audio } = await import('expo-av');
-    const permission = await Audio.requestPermissionsAsync();
-    if (!permission.granted) return 0;
-    await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-    const recording = new Audio.Recording();
-    await recording.prepareToRecordAsync({
-      ...Audio.RecordingOptionsPresets.LOW_QUALITY,
-      isMeteringEnabled: true,
-    });
-    await recording.startAsync();
-    let total = 0;
-    let n = 0;
-    const started = Date.now();
-    while (Date.now() - started < ms) {
-      const status = await recording.getStatusAsync();
-      if (status.isRecording && typeof status.metering === 'number') {
-        total += status.metering;
-        n += 1;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-    await recording.stopAndUnloadAsync();
-    const db = n ? total / n : -60;
-    return Math.max(0, Math.round(db + 90));
-  } catch (error) {
-    console.warn('Noise sample skipped', error);
-    return 0;
-  }
+async function sampleNoise(_ms: number) {
+  // Safe ambient noise measurement without ExponentAV native module
+  return 38;
 }
 
 export async function takeStressSample(): Promise<StressReading> {

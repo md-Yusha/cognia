@@ -62,7 +62,8 @@ export async function registerPatientCode(
   patientId: string, 
   caregiverId: string, 
   patientName: string,
-  preferredLanguage: string = 'en'
+  preferredLanguage: string = 'en',
+  extraProfileData?: Partial<PatientProfile>
 ): Promise<string> {
   let uniqueCode = '';
   let attempts = 0;
@@ -103,6 +104,7 @@ export async function registerPatientCode(
       pattern_recognition: 'easy',
       focus_tap: 'easy',
     },
+    ...extraProfileData,
   };
 
   try {
@@ -181,10 +183,69 @@ async function saveLocalCodeMapping(mapping: PatientCodeMapping, patient: Patien
 async function getLocalCodeMapping(code: string) {
   try {
     const raw = await AsyncStorage.getItem(LOCAL_CODES_STORAGE_KEY);
-    if (!raw) return null;
-    const store = JSON.parse(raw);
-    return store[code] || null;
+    const store = raw ? JSON.parse(raw) : {};
+    if (store[code]) return store[code];
+
+    // Built-in registered demo profiles for offline evaluation
+    if (code === 'ASSAM-102') {
+      const patient: PatientProfile = {
+        id: 'patient_sample_01',
+        caregiverId: 'caregiver_active',
+        name: 'Rupali Barua',
+        age: 72,
+        gender: 'female',
+        preferredLanguage: 'as',
+        accessCode: 'ASSAM-102',
+        dementiaStage: 'early',
+        createdAt: Date.now() - 86400000 * 10,
+        difficultyLevels: {
+          memory_match: 'medium',
+          daily_routine_recall: 'easy',
+          pattern_recognition: 'easy',
+          focus_tap: 'medium',
+        }
+      };
+      const mapping: PatientCodeMapping = {
+        code: 'ASSAM-102',
+        patientId: patient.id,
+        caregiverId: patient.caregiverId,
+        patientName: patient.name,
+        createdAt: patient.createdAt,
+      };
+      return { mapping, patient };
+    }
+
+    if (code === 'KHASI-404') {
+      const patient: PatientProfile = {
+        id: 'patient_sample_02',
+        caregiverId: 'caregiver_active',
+        name: 'Khrawbor Khongwir',
+        age: 68,
+        gender: 'male',
+        preferredLanguage: 'kha',
+        accessCode: 'KHASI-404',
+        dementiaStage: 'moderate',
+        createdAt: Date.now() - 86400000 * 5,
+        difficultyLevels: {
+          memory_match: 'easy',
+          daily_routine_recall: 'easy',
+          pattern_recognition: 'easy',
+          focus_tap: 'easy',
+        }
+      };
+      const mapping: PatientCodeMapping = {
+        code: 'KHASI-404',
+        patientId: patient.id,
+        caregiverId: patient.caregiverId,
+        patientName: patient.name,
+        createdAt: patient.createdAt,
+      };
+      return { mapping, patient };
+    }
+
+    return null;
   } catch {
     return null;
   }
 }
+

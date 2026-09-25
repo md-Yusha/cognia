@@ -8,7 +8,10 @@
     "scheme": "cognia",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ner.cognia"
+      "bundleIdentifier": "com.ner.cognia",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Cognia uses patient location to help caregivers locate patients and show regional care map pins."
+      }
     },
     "android": {
       "package": "com.ner.cognia",
@@ -16,7 +19,9 @@
         "RECEIVE_BOOT_COMPLETED",
         "SCHEDULE_EXACT_ALARM",
         "POST_NOTIFICATIONS",
-        "VIBRATE"
+        "VIBRATE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
       ]
     },
     "web": {

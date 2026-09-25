@@ -1,50 +1,75 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, ViewStyle, TouchableOpacity } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 interface CardProps {
   children: React.ReactNode;
-  variant?: 'default' | 'sage' | 'peach' | 'lavender' | 'sky';
+  variant?: 'default' | 'sage' | 'peach' | 'lavender' | 'sky' | 'dark' | 'glass';
   className?: string;
   style?: ViewStyle;
+  onPress?: () => void;
+  activeOpacity?: number;
 }
 
 export const Card: React.FC<CardProps> = ({ 
   children, 
   variant = 'default',
   className = '', 
-  style 
+  style,
+  onPress,
+  activeOpacity = 0.85,
 }) => {
-  let bgClasses = 'bg-white border-[#EFEBE4]';
-  let shadowColor = '#6B5E4F';
+  let bgClasses = 'bg-white border-[#EDE7DD]';
+  let shadowColor = '#473E35';
 
   if (variant === 'sage') {
-    bgClasses = 'bg-[#EBF4EE] border-[#CDE3D5]';
-    shadowColor = '#3D6C4E';
+    bgClasses = 'bg-[#F2F9F5] border-[#CDE5D6]';
+    shadowColor = '#1F6B4F';
   } else if (variant === 'peach') {
-    bgClasses = 'bg-[#FDF3ED] border-[#F4D8C9]';
-    shadowColor = '#8A4226';
+    bgClasses = 'bg-[#FFF8F3] border-[#FBDCC8]';
+    shadowColor = '#9A431D';
   } else if (variant === 'lavender') {
-    bgClasses = 'bg-[#F5F0F8] border-[#DDD3E7]';
-    shadowColor = '#675283';
+    bgClasses = 'bg-[#F8F6FB] border-[#E3D7EE]';
+    shadowColor = '#6A4690';
   } else if (variant === 'sky') {
-    bgClasses = 'bg-[#EDF6F8] border-[#C4E3EB]';
-    shadowColor = '#336B7B';
+    bgClasses = 'bg-[#F1F8FA] border-[#CCE7EF]';
+    shadowColor = '#216174';
+  } else if (variant === 'dark') {
+    bgClasses = 'bg-[#15231B] border-[#2C4837]';
+    shadowColor = '#000000';
+  } else if (variant === 'glass') {
+    bgClasses = 'bg-white/85 border-white/60';
+    shadowColor = '#000000';
+  }
+
+  const containerClasses = `rounded-[28px] p-5 border ${bgClasses} ${className}`;
+  const containerStyle: ViewStyle = {
+    shadowColor,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 2,
+    ...style,
+  };
+
+  if (onPress) {
+    return (
+      <TouchableOpacity
+        activeOpacity={activeOpacity}
+        onPress={() => {
+          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+          onPress();
+        }}
+        className={containerClasses}
+        style={containerStyle}
+      >
+        {children}
+      </TouchableOpacity>
+    );
   }
 
   return (
-    <View
-      className={`rounded-[30px] p-6 border ${bgClasses} ${className}`}
-      style={[
-        {
-          shadowColor,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.06,
-          shadowRadius: 14,
-          elevation: 2,
-        },
-        style
-      ]}
-    >
+    <View className={containerClasses} style={containerStyle}>
       {children}
     </View>
   );

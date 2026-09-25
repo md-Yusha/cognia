@@ -23,12 +23,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const getReactNativePersistence = (FirebaseAuth as any).getReactNativePersistence;
 
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "AIzaSyCWaMp_OaYPhRJkYgKMhiMYEM4SoOYIW3s",
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "cogni-28f6e.firebaseapp.com",
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "cogni-28f6e",
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "cogni-28f6e.firebasestorage.app",
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "1088208498167",
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "1:1088208498167:web:4524f40cf9ac2b673992f2"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "AIzaSyB69wUrAA_qMvetjEr8vpx25mUQCgG-bl4",
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "cognia-cd099.firebaseapp.com",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "cognia-cd099",
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "cognia-cd099.firebasestorage.app",
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "820229052901",
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "1:820229052901:web:bd1e1468fdffc24248770c"
 };
 
 // Initialize Firebase App

@@ -18,8 +18,11 @@ try {
       }),
     });
   }
-} catch (e) {
-  console.warn('Notifications handler fallback in Expo Go:', e);
+} catch (e: any) {
+  // Silently handle Expo Go SDK 53 remote notifications deprecation
+  if (!e?.message?.includes('removed from Expo Go') && !e?.message?.includes('SDK 53')) {
+    console.warn('Notifications handler fallback in Expo Go:', e);
+  }
 }
 
 /**
@@ -50,9 +53,19 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 export async function scheduleLocalReminder(reminder: ReminderItem): Promise<string[]> {
   if (Platform.OS === 'web' || !Notifications) return [];
 
-  const [hoursStr, minutesStr] = reminder.time.split(':');
-  const hour = parseInt(hoursStr, 10);
-  const minute = parseInt(minutesStr, 10);
+  // Parse time supporting both 24h ('14:30') and 12h AM/PM ('02:30 PM')
+  const clean = (reminder.time || '08:00').trim();
+  const isPM = /pm/i.test(clean);
+  const isAM = /am/i.test(clean);
+  const parts = clean.replace(/[^\d:]/g, '').split(':');
+  let hour = parseInt(parts[0] || '8', 10);
+  const minute = parseInt(parts[1] || '0', 10);
+
+  if (isPM && hour < 12) {
+    hour += 12;
+  } else if (isAM && hour === 12) {
+    hour = 0;
+  }
 
   const scheduledIds: string[] = [];
 

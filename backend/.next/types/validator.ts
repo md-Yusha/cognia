@@ -18,6 +18,42 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 
 
 
+// Validate ../../app/api/care/alerts/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/care/alerts">> = Specific
+  const handler = {} as typeof import("../../app/api/care/alerts/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/care/messages/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/care/messages">> = Specific
+  const handler = {} as typeof import("../../app/api/care/messages/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/care/presence/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/care/presence">> = Specific
+  const handler = {} as typeof import("../../app/api/care/presence/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/care/voice/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/care/voice">> = Specific
+  const handler = {} as typeof import("../../app/api/care/voice/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/api/cognitive/adapt/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/cognitive/adapt">> = Specific

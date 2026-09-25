@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, RefreshCw, Trophy } from 'lucide-react-native';
+import { ArrowLeft, RefreshCw, Trophy, Home } from 'lucide-react-native';
 import { Button } from '../../../src/components/ui/Button';
 import { VoiceButton } from '../../../src/components/ui/VoiceButton';
+import { ResponsiveContainer } from '../../../src/components/ui/ResponsiveContainer';
 import { usePatientStore } from '../../../src/store/usePatientStore';
 import { calculateAdaptiveTier } from '../../../src/services/adaptiveEngine';
 import { speakPrompt } from '../../../src/services/ttsService';
@@ -118,193 +119,232 @@ export default function DailyRoutineGameScreen() {
   return (
     <ScrollView 
       style={{ flex: 1, backgroundColor: '#FAF7F2' }} 
-      contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16, paddingBottom: 50 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 64 }}
+      keyboardShouldPersistTaps="handled"
     >
-      {/* Top Header */}
-      <View className="flex-row items-center justify-between pt-6 mb-4">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="flex-row items-center bg-white border border-[#E8E2D8] px-4 py-2 rounded-full shadow-sm"
-        >
-          <ArrowLeft size={16} color="#4A5568" />
-          <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-lg"
-            style={{ fontFamily: 'Nunito-Bold' }}
+      <ResponsiveContainer maxWidth="md">
+        {/* Top Header */}
+        <View className="flex-row items-center justify-between pt-4 mb-4">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.82}
+            className="flex-row items-center bg-white border border-[#CBD5E1] px-3.5 py-1.5 rounded-full"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
           >
-            Back
-          </Text>
-        </TouchableOpacity>
+            <ArrowLeft size={15} color="#475569" />
+            <Text 
+              className="text-[#475569] font-bold ml-1.5 text-sm"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              Back
+            </Text>
+          </TouchableOpacity>
 
-        <View className="bg-[#FDF3ED] border border-[#F4D8C9] px-3.5 py-1 rounded-full">
-          <Text 
-            className="text-[#864127] text-lg font-bold uppercase tracking-wider"
-            style={{ fontFamily: 'Nunito-Bold' }}
-          >
-            Level: {currentTier}
-          </Text>
+          <View className="bg-[#FFF0E6] border border-[#FAD0B6] px-3.5 py-1 rounded-full">
+            <Text 
+              className="text-[#9A431D] text-xs font-bold uppercase tracking-wider"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              Level: {currentTier}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      {/* Title Card */}
-      <View 
-        className="bg-[#FDF3ED] rounded-[32px] p-6 border border-[#F4D8C9] mb-6"
-        style={{
-          shadowColor: '#8A4226',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          elevation: 2,
-        }}
-      >
-        <Text 
-          className="text-4xl text-[#864127] text-center"
-          style={{ fontFamily: 'PatrickHand' }}
-        >
-          {t('game_routine')}
-        </Text>
-        <Text 
-          className="text-[#A95838] text-center text-xl font-semibold mt-1"
-          style={{ fontFamily: 'Nunito-SemiBold' }}
-        >
-          Arrange your routine cards in morning to afternoon order.
-        </Text>
-      </View>
-
-      {/* Target Schedule List */}
-      <View className="mb-6">
-        <Text 
-          className="text-3xl text-[#2B3A30] mb-3"
-          style={{ fontFamily: 'PatrickHand' }}
-        >
-          Your Ordered Schedule:
-        </Text>
-        <View className="gap-2.5">
-          {Array.from({ length: totalSteps }).map((_, idx) => {
-            const step = selectedSequence[idx];
-            return (
-              <View
-                key={idx}
-                className={step ? 'p-4 rounded-[26px] border-2 flex-row items-center min-h-[72px] bg-white border-[#F4D8C9]' : 'p-4 rounded-[26px] border-2 flex-row items-center min-h-[72px] bg-[#F8F6F2] border-[#DFD8CC]'}
-              >
-                <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${step ? 'bg-[#C87453]' : 'bg-[#EAE4D8]'}`}>
-                  <Text className="text-white font-bold text-xl">{idx + 1}</Text>
-                </View>
-                {step ? (
-                  <View className="flex-row items-center flex-1">
-                    <Text className="text-4xl mr-3">{step.emoji}</Text>
-                    <Text 
-                      className="text-[#2D3748] text-xl font-bold flex-1"
-                      style={{ fontFamily: 'Nunito-Bold' }}
-                    >
-                      {step.title}
-                    </Text>
-                  </View>
-                ) : (
-                  <Text 
-                    className="text-[#A0AEC0] text-xl font-semibold"
-                    style={{ fontFamily: 'Nunito-SemiBold' }}
-                  >
-                    Tap a card below to place step {idx + 1}
-                  </Text>
-                )}
-              </View>
-            );
-          })}
-        </View>
-      </View>
-
-      {/* Results View or Available Pool */}
-      {isFinished ? (
+        {/* Title Card */}
         <View 
-          className={`p-8 rounded-3xl border-2 items-center mb-6 ${isCorrect ? 'bg-white border-[#CDE3D5]' : 'bg-white border-[#F5D8C9]'}`}
+          className="bg-[#FFF8F3] rounded-[28px] p-5 border-2 border-[#FBDCC8] mb-5"
           style={{
-            shadowColor: '#8C5A40',
-            shadowOffset: { width: 0, height: 4 },
+            shadowColor: '#9A431D',
+            shadowOffset: { width: 0, height: 3 },
             shadowOpacity: 0.08,
-            shadowRadius: 14,
-            elevation: 3,
+            shadowRadius: 10,
+            elevation: 2,
           }}
         >
-          <View className="w-18 h-18 bg-[#FAF3E0] rounded-full items-center justify-center mb-2">
-            <Trophy size={40} color={isCorrect ? '#59936E' : '#C87453'} />
-          </View>
           <Text 
-            className="text-4xl text-[#2B3A30] mt-2 text-center"
-            style={{ fontFamily: 'PatrickHand' }}
+            className="text-2xl text-[#9A431D] font-bold text-center"
+            style={{ fontFamily: 'Nunito-Bold' }}
           >
-            {isCorrect ? t('well_done') : t('try_again')}
+            {t('game_routine')}
           </Text>
           <Text 
-            className="text-[#64748B] text-xl text-center mt-1"
+            className="text-[#B95217] text-center text-sm font-semibold mt-1"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
-            {isCorrect ? 'You remembered your daily order accurately!' : 'Morning tea comes first, followed by medicine.'}
+            Arrange your routine cards in morning to afternoon order.
           </Text>
-
-          <View className="flex-row gap-3 mt-6 w-full">
-            <View className="flex-1">
-              <Button
-                title="Try Again"
-                variant="warm"
-                size="large"
-                icon={<RefreshCw size={18} color="#FFFFFF" />}
-                onPress={initGame}
-              />
-            </View>
-            <View className="flex-1">
-              <Button
-                title="Home"
-                variant="outline"
-                size="large"
-                onPress={() => router.replace('/(patient)/home')}
-              />
-            </View>
-          </View>
         </View>
-      ) : (
-        <View className="mb-6">
+
+        {/* Target Schedule List */}
+        <View className="mb-5">
           <Text 
-            className="text-3xl text-[#2B3A30] mb-3"
-            style={{ fontFamily: 'PatrickHand' }}
+            className="text-base text-[#1E293B] font-bold mb-3"
+            style={{ fontFamily: 'Nunito-Bold' }}
           >
-            Available Cards (Tap in order):
+            Your Ordered Schedule:
           </Text>
-          <View className="gap-2.5">
-            {availableSteps.map((step) => (
-              <TouchableOpacity
-                key={step.id}
-                activeOpacity={0.82}
-                onPress={() => handleSelectStep(step)}
-                className="bg-white border border-[#E8E2D8] active:border-[#C87453] p-4 rounded-3xl flex-row items-center shadow-sm min-h-[74px]"
-              >
-                <Text className="text-4xl mr-3">{step.emoji}</Text>
-                <View className="flex-1">
-                  <Text 
-                    className="text-[#2D3748] text-xl font-bold"
-                    style={{ fontFamily: 'Nunito-Bold' }}
+          <View style={{ gap: 10 }}>
+            {Array.from({ length: totalSteps }).map((_, idx) => {
+              const step = selectedSequence[idx];
+              return (
+                <View
+                  key={idx}
+                  className="p-3.5 rounded-2xl border-2 flex-row items-center min-h-[68px]"
+                  style={{
+                    backgroundColor: step ? '#FFFFFF' : '#FAF8F5',
+                    borderColor: step ? '#FBDCC8' : '#E2DDD5',
+                    borderStyle: step ? 'solid' : 'dashed',
+                    shadowColor: step ? '#000000' : 'transparent',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: step ? 0.05 : 0,
+                    shadowRadius: 2,
+                    elevation: step ? 1 : 0,
+                  }}
+                >
+                  <View 
+                    className="w-8 h-8 rounded-full items-center justify-center mr-3"
+                    style={{ backgroundColor: step ? '#D96B27' : '#CBD5E1' }}
                   >
-                    {step.title}
-                  </Text>
-                  <Text 
-                    className="text-[#718096] text-lg font-semibold mt-0.5"
-                    style={{ fontFamily: 'Nunito-SemiBold' }}
-                  >
-                    {step.hint}
-                  </Text>
+                    <Text className="text-white font-bold text-sm">{idx + 1}</Text>
+                  </View>
+                  {step ? (
+                    <View className="flex-row items-center flex-1">
+                      <Text className="text-3xl mr-2.5">{step.emoji}</Text>
+                      <Text 
+                        className="text-[#1E293B] text-base font-bold flex-1"
+                        style={{ fontFamily: 'Nunito-Bold' }}
+                      >
+                        {step.title}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text 
+                      className="text-[#94A3B8] text-sm font-semibold"
+                      style={{ fontFamily: 'Nunito-SemiBold' }}
+                    >
+                      Tap a step below to place slot #{idx + 1}
+                    </Text>
+                  )}
                 </View>
-              </TouchableOpacity>
-            ))}
+              );
+            })}
           </View>
         </View>
-      )}
 
-      {/* Voice Assistant */}
-      <View className="items-center mt-2">
-        <VoiceButton
-          textToSpeak="Arrange your daily tasks in order from morning to afternoon."
-          label={t('voice_assist')}
-        />
-      </View>
+        {/* Results View or Available Pool */}
+        {isFinished ? (
+          <View 
+            className="p-7 rounded-[32px] border-2 items-center mb-6 bg-white"
+            style={{
+              borderColor: isCorrect ? '#CCEAD7' : '#FBDCC8',
+              shadowColor: isCorrect ? '#16704A' : '#9A431D',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.1,
+              shadowRadius: 16,
+              elevation: 3,
+            }}
+          >
+            <View className="w-20 h-20 bg-[#FEF3C7] rounded-3xl items-center justify-center mb-3 border border-[#FDE68A]">
+              <Trophy size={40} color={isCorrect ? '#16704A' : '#D96B27'} />
+            </View>
+            <Text 
+              className="text-3xl text-[#1E293B] font-bold text-center"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              {isCorrect ? t('well_done') : t('try_again')}
+            </Text>
+            <Text 
+              className="text-[#64748B] text-base text-center mt-1 font-semibold"
+              style={{ fontFamily: 'Nunito-SemiBold' }}
+            >
+              {isCorrect ? 'You arranged your daily routine in perfect sequence!' : 'Tea comes first in the morning, followed by medicine.'}
+            </Text>
+
+            <View className="flex-row gap-3 mt-6 w-full">
+              <View className="flex-1">
+                <Button
+                  title={isCorrect ? t('play_again') : t('try_again')}
+                  variant="primary"
+                  size="large"
+                  icon={<RefreshCw size={16} color="#FFFFFF" />}
+                  onPress={initGame}
+                />
+              </View>
+              <View className="flex-1">
+                <Button
+                  title={t('return_home')}
+                  variant="outline"
+                  size="large"
+                  icon={<Home size={16} color="#475569" />}
+                  onPress={() => router.replace('/(patient)/home')}
+                />
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View className="mb-6">
+            <Text 
+              className="text-base text-[#1E293B] font-bold mb-2.5"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              Available Daily Activities:
+            </Text>
+            <View style={{ gap: 10 }}>
+              {availableSteps.map((step) => (
+                <TouchableOpacity
+                  key={step.id}
+                  activeOpacity={0.84}
+                  onPress={() => handleSelectStep(step)}
+                  className="bg-white border-2 border-[#EDE7DD] p-3.5 rounded-2xl flex-row items-center justify-between"
+                  style={{
+                    shadowColor: '#3A3226',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 6,
+                    elevation: 1,
+                  }}
+                >
+                  <View className="flex-row items-center flex-1 mr-2">
+                    <Text className="text-3xl mr-3">{step.emoji}</Text>
+                    <View className="flex-1">
+                      <Text 
+                        className="text-[#1E293B] text-base font-bold"
+                        style={{ fontFamily: 'Nunito-Bold' }}
+                      >
+                        {step.title}
+                      </Text>
+                      <Text 
+                        className="text-[#64748B] text-xs font-semibold"
+                        style={{ fontFamily: 'Nunito-SemiBold' }}
+                      >
+                        {step.hint}
+                      </Text>
+                    </View>
+                  </View>
+                  <View className="bg-[#FFF0E6] px-3 py-1.5 rounded-full border border-[#FAD0B6]">
+                    <Text className="text-[#9A431D] text-xs font-bold">Tap to Place ➔</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Voice Assistant */}
+        <View className="items-center">
+          <VoiceButton
+            compact
+            textToSpeak="Tap the cards in the order you do them every day, starting with morning tea."
+            label={t('voice_assist')}
+          />
+        </View>
+      </ResponsiveContainer>
     </ScrollView>
   );
 }

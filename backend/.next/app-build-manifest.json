@@ -1,9 +1,3 @@
 {
-  "pages": {
-    "/api/health/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/health/route.js"
-    ]
-  }
+  "pages": {}
 }

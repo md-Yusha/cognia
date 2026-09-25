@@ -13,6 +13,7 @@ interface ButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   accessibilityLabel?: string;
+  subtitle?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -26,6 +27,7 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
   accessibilityLabel,
+  subtitle,
 }) => {
   const handlePress = () => {
     if (disabled || loading) return;
@@ -35,62 +37,62 @@ export const Button: React.FC<ButtonProps> = ({
     onPress();
   };
 
-  // Subtle, relaxing pastel palette
-  let bgClasses = 'bg-[#3D6C4E] active:bg-[#335B41]';
+  // Color variants crafted for high contrast & soothing healthcare aesthetics
+  let bgClasses = 'bg-[#16704A] active:bg-[#115438]';
   let textClasses = 'text-white';
-  let borderClasses = 'border border-[#335B41]/40';
-  let shadowColor = '#2C4E38';
+  let borderClasses = 'border border-[#0E422C]/30';
+  let shadowColor = '#16704A';
 
   if (variant === 'secondary') {
-    bgClasses = 'bg-[#EBF4EE] active:bg-[#DDEEE2]';
-    textClasses = 'text-[#2C503A]';
-    borderClasses = 'border border-[#C2DEC8]';
-    shadowColor = '#8CA392';
+    bgClasses = 'bg-[#EBF7F0] active:bg-[#DDF0E5]';
+    textClasses = 'text-[#115438]';
+    borderClasses = 'border border-[#C2E4D0]';
+    shadowColor = '#609B77';
   } else if (variant === 'warm') {
-    bgClasses = 'bg-[#C87453] active:bg-[#B36344]';
+    bgClasses = 'bg-[#D96B27] active:bg-[#B95217]';
     textClasses = 'text-white';
-    borderClasses = 'border border-[#A95838]/40';
-    shadowColor = '#8A4226';
+    borderClasses = 'border border-[#943E12]/30';
+    shadowColor = '#D96B27';
   } else if (variant === 'soft') {
-    bgClasses = 'bg-[#FDF3ED] active:bg-[#FAE3D7]';
-    textClasses = 'text-[#8A4226]';
-    borderClasses = 'border border-[#F4D8C9]';
-    shadowColor = '#C49B85';
+    bgClasses = 'bg-[#FFF5EE] active:bg-[#FCE6D8]';
+    textClasses = 'text-[#9A431D]';
+    borderClasses = 'border border-[#F7D8C4]';
+    shadowColor = '#CBA086';
   } else if (variant === 'lavender') {
-    bgClasses = 'bg-[#F5F0F8] active:bg-[#EAE0F2]';
-    textClasses = 'text-[#5A4172]';
-    borderClasses = 'border border-[#DDD0E8]';
-    shadowColor = '#9E8AA8';
+    bgClasses = 'bg-[#F6F2FA] active:bg-[#ECE4F4]';
+    textClasses = 'text-[#58397E]';
+    borderClasses = 'border border-[#E0D3ED]';
+    shadowColor = '#A58DBF';
   } else if (variant === 'sky') {
-    bgClasses = 'bg-[#EDF6F8] active:bg-[#DFEFF3]';
-    textClasses = 'text-[#2C5E6E]';
-    borderClasses = 'border border-[#C6E2E9]';
-    shadowColor = '#7CAAB5';
+    bgClasses = 'bg-[#EEF7FA] active:bg-[#DEF0F5]';
+    textClasses = 'text-[#1D5C6F]';
+    borderClasses = 'border border-[#C4E3ED]';
+    shadowColor = '#7CAEB9';
   } else if (variant === 'outline') {
     bgClasses = 'bg-white active:bg-[#FAF8F5]';
-    textClasses = 'text-[#4A5568]';
-    borderClasses = 'border-2 border-[#E8E2D8]';
-    shadowColor = '#A09789';
+    textClasses = 'text-[#334155]';
+    borderClasses = 'border-2 border-[#E2DDD5]';
+    shadowColor = '#94A3B8';
   } else if (variant === 'google') {
-    bgClasses = 'bg-white active:bg-[#FAF8F5]';
-    textClasses = 'text-[#2D3748]';
-    borderClasses = 'border border-[#E2DDD3]';
-    shadowColor = '#A09789';
+    bgClasses = 'bg-white active:bg-[#F8FAFC]';
+    textClasses = 'text-[#1E293B]';
+    borderClasses = 'border border-[#CBD5E1]';
+    shadowColor = '#94A3B8';
   } else if (variant === 'danger') {
-    bgClasses = 'bg-[#DC6B6B] active:bg-[#C95555]';
+    bgClasses = 'bg-[#E11D48] active:bg-[#BE123C]';
     textClasses = 'text-white';
-    borderClasses = 'border border-[#B84E4E]/40';
-    shadowColor = '#943838';
+    borderClasses = 'border border-[#9F1239]/40';
+    shadowColor = '#E11D48';
   }
 
-  let sizeClasses = 'min-h-[64px] py-4 px-6 rounded-full';
+  let sizeClasses = 'min-h-[64px] py-4 px-6 rounded-2xl';
   let fontClasses = 'text-2xl';
 
   if (size === 'normal') {
-    sizeClasses = 'min-h-[48px] py-2.5 px-5 rounded-full';
-    fontClasses = 'text-xl';
+    sizeClasses = 'min-h-[46px] py-2.5 px-5 rounded-xl';
+    fontClasses = 'text-lg';
   } else if (size === 'large') {
-    sizeClasses = 'min-h-[56px] py-3.5 px-6 rounded-full';
+    sizeClasses = 'min-h-[56px] py-3.5 px-6 rounded-2xl';
     fontClasses = 'text-xl';
   }
 
@@ -98,40 +100,50 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.85}
+      activeOpacity={0.84}
       onPress={handlePress}
       disabled={disabled || loading}
       accessible={true}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || title}
       className={`flex-row items-center justify-center ${bgClasses} ${borderClasses} ${sizeClasses} ${
-        disabled ? 'opacity-50' : 'opacity-100'
+        disabled ? 'opacity-40' : 'opacity-100'
       }`}
       style={[
         {
           shadowColor,
-          shadowOffset: { width: 0, height: 3 },
-          shadowOpacity: 0.12,
-          shadowRadius: 8,
-          elevation: 2,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: isLightBg ? 0.08 : 0.22,
+          shadowRadius: 10,
+          elevation: 3,
         },
         style
       ]}
     >
       {loading ? (
         <ActivityIndicator 
-          color={isLightBg ? '#2C503A' : '#FFFFFF'} 
+          color={isLightBg ? '#115438' : '#FFFFFF'} 
           size="small" 
         />
       ) : (
         <View className="flex-row items-center justify-center">
-          {icon ? <View className="mr-2.5">{icon}</View> : null}
-          <Text 
-            className={`${textClasses} ${fontClasses} font-bold text-center tracking-wide`} 
-            style={[{ fontFamily: 'Nunito-Bold' }, textStyle]}
-          >
-            {title}
-          </Text>
+          {icon ? <View className="mr-3">{icon}</View> : null}
+          <View className="items-center justify-center">
+            <Text 
+              className={`${textClasses} ${fontClasses} font-bold text-center tracking-wide`} 
+              style={[{ fontFamily: 'Nunito-Bold' }, textStyle]}
+            >
+              {title}
+            </Text>
+            {subtitle ? (
+              <Text
+                className={`${isLightBg ? 'text-[#64748B]' : 'text-white/80'} text-sm mt-0.5 text-center`}
+                style={{ fontFamily: 'Nunito-SemiBold' }}
+              >
+                {subtitle}
+              </Text>
+            ) : null}
+          </View>
         </View>
       )}
     </TouchableOpacity>

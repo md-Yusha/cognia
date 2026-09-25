@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Text, View } from 'react-native';
+import { Modal, Text, View, TouchableOpacity } from 'react-native';
 import { usePatientStore } from '../store/usePatientStore';
 import { postStressAlert } from '../services/careApi';
 import { recordScreenTouch, reassuranceLine, startStressWatch, StressReading } from '../services/stressMonitor';
 import { speakPrompt } from '../services/ttsService';
+import { Heart, ShieldCheck } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 
-export function StressHost({ children }: { children: React.ReactNode }) {
+export function StressHost({ children }: { children?: React.ReactNode }) {
   const patient = usePatientStore((state) => state.patient);
   const [reading, setReading] = useState<StressReading | null>(null);
 
@@ -39,31 +41,70 @@ export function StressHost({ children }: { children: React.ReactNode }) {
     });
   }, [patient]);
 
+  const handleDismiss = () => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    setReading(null);
+  };
+
+  if (!patient || !reading) {
+    return children ? <>{children}</> : null;
+  }
+
   return (
-    <View
-      style={{ flex: 1 }}
-      onStartShouldSetResponderCapture={() => {
-        recordScreenTouch();
-        return false;
-      }}
-    >
+    <>
       {children}
       <Modal visible={!!reading} transparent animationType="fade">
-        <View style={{ flex: 1, backgroundColor: 'rgba(43,58,48,0.55)', justifyContent: 'center', padding: 24 }}>
-          <View style={{ backgroundColor: '#F4EFE6', borderRadius: 32, padding: 28 }}>
-            <Text style={{ fontFamily: 'PatrickHand', fontSize: 40, color: '#2C503A', textAlign: 'center' }}>You are safe</Text>
-            <Text style={{ fontFamily: 'Nunito-SemiBold', fontSize: 24, color: '#2B3A30', textAlign: 'center', marginTop: 12, lineHeight: 34 }}>
+        <View className="flex-1 bg-black/60 justify-center items-center p-6">
+          <View 
+            className="w-full max-w-sm bg-[#FAF8F5] rounded-[32px] p-7 items-center border-2 border-[#CCEAD7]"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.2,
+              shadowRadius: 20,
+              elevation: 6,
+            }}
+          >
+            <View className="w-18 h-18 bg-[#EAF7EE] border-2 border-[#BDE5CB] rounded-3xl items-center justify-center mb-3">
+              <Text className="text-4xl">💚</Text>
+            </View>
+
+            <Text 
+              className="text-3xl text-[#143825] font-bold text-center"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              You are safe
+            </Text>
+
+            <Text 
+              className="text-xl text-[#334155] text-center mt-2 mb-6 font-semibold leading-relaxed"
+              style={{ fontFamily: 'Nunito-SemiBold' }}
+            >
               {reassuranceLine()}
             </Text>
-            <Text
-              onPress={() => setReading(null)}
-              style={{ marginTop: 22, textAlign: 'center', backgroundColor: '#3D6C4E', color: 'white', overflow: 'hidden', borderRadius: 999, paddingVertical: 16, fontFamily: 'Nunito-Bold', fontSize: 20 }}
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={handleDismiss}
+              className="w-full bg-[#16704A] py-4 rounded-2xl items-center justify-center min-h-[56px]"
+              style={{
+                shadowColor: '#16704A',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.15,
+                shadowRadius: 4,
+                elevation: 2,
+              }}
             >
-              I am okay
-            </Text>
+              <Text 
+                className="text-white text-xl font-bold"
+                style={{ fontFamily: 'Nunito-Bold' }}
+              >
+                I am okay
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </View>
+    </>
   );
 }

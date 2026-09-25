@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, RefreshCw, Trophy, Target } from 'lucide-react-native';
+import { ArrowLeft, RefreshCw, Trophy, Home } from 'lucide-react-native';
 import { Button } from '../../../src/components/ui/Button';
 import { VoiceButton } from '../../../src/components/ui/VoiceButton';
+import { ResponsiveContainer } from '../../../src/components/ui/ResponsiveContainer';
 import { usePatientStore } from '../../../src/store/usePatientStore';
 import { calculateAdaptiveTier } from '../../../src/services/adaptiveEngine';
 import { speakPrompt } from '../../../src/services/ttsService';
@@ -123,143 +124,171 @@ export default function FocusTapGameScreen() {
   return (
     <ScrollView 
       style={{ flex: 1, backgroundColor: '#FAF7F2' }} 
-      contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16, paddingBottom: 50 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 64 }}
+      keyboardShouldPersistTaps="handled"
     >
-      {/* Top Header */}
-      <View className="flex-row items-center justify-between pt-6 mb-4">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="flex-row items-center bg-white border border-[#E8E2D8] px-4 py-2 rounded-full shadow-sm"
-        >
-          <ArrowLeft size={16} color="#4A5568" />
-          <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-lg"
-            style={{ fontFamily: 'Nunito-Bold' }}
+      <ResponsiveContainer maxWidth="md">
+        {/* Top Header */}
+        <View className="flex-row items-center justify-between pt-4 mb-4">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.82}
+            className="flex-row items-center bg-white border border-[#CBD5E1] px-3.5 py-1.5 rounded-full"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
           >
-            Back
-          </Text>
-        </TouchableOpacity>
+            <ArrowLeft size={15} color="#475569" />
+            <Text 
+              className="text-[#475569] font-bold ml-1.5 text-sm"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              Back
+            </Text>
+          </TouchableOpacity>
 
-        <View className="bg-[#EDF6F8] border border-[#C4E3EB] px-3.5 py-1 rounded-full">
-          <Text 
-            className="text-[#2C5E6E] text-lg font-bold uppercase tracking-wider"
-            style={{ fontFamily: 'Nunito-Bold' }}
-          >
-            Round: {Math.min(currentRound + 1, totalRounds)} / {totalRounds}
-          </Text>
+          <View className="bg-[#E7F4F7] border border-[#B8DFEA] px-3.5 py-1 rounded-full">
+            <Text 
+              className="text-[#216174] text-xs font-bold uppercase tracking-wider"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              Round: {Math.min(currentRound + 1, totalRounds)} / {totalRounds}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      {/* Game Title */}
-      <View 
-        className="bg-[#EDF6F8] rounded-[32px] p-6 border border-[#C4E3EB] mb-6"
-        style={{
-          shadowColor: '#2C5E6E',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          elevation: 2,
-        }}
-      >
-        <Text 
-          className="text-4xl text-[#2C5E6E] text-center"
-          style={{ fontFamily: 'PatrickHand' }}
-        >
-          {t('game_focus')}
-        </Text>
-        <Text 
-          className="text-[#43798A] text-center text-xl font-semibold mt-1"
-          style={{ fontFamily: 'Nunito-SemiBold' }}
-        >
-          Tap the fresh green tea leaf 🍃 when it appears in the garden.
-        </Text>
-      </View>
-
-      {/* Finished Summary or Active Garden Grid */}
-      {isFinished ? (
+        {/* Game Title Card */}
         <View 
-          className="bg-white border-2 border-[#C4E3EB] rounded-[32px] p-8 items-center mb-6"
+          className="bg-[#F1F8FA] rounded-[28px] p-5 border-2 border-[#CCE7EF] mb-5"
           style={{
-            shadowColor: '#2C5E6E',
-            shadowOffset: { width: 0, height: 6 },
+            shadowColor: '#216174',
+            shadowOffset: { width: 0, height: 3 },
             shadowOpacity: 0.08,
-            shadowRadius: 16,
-            elevation: 3,
+            shadowRadius: 10,
+            elevation: 2,
           }}
         >
-          <View className="w-20 h-20 bg-[#FAF3E0] rounded-full items-center justify-center mb-2 border border-[#F4E3C4]">
-            <Trophy size={42} color="#D97706" />
-          </View>
           <Text 
-            className="text-4xl text-[#2B3A30] mt-2 text-center"
-            style={{ fontFamily: 'PatrickHand' }}
+            className="text-2xl text-[#164E63] font-bold text-center"
+            style={{ fontFamily: 'Nunito-Bold' }}
           >
-            {t('well_done')}
+            {t('game_focus')}
           </Text>
           <Text 
-            className="text-[#64748B] text-xl font-semibold mt-1"
+            className="text-[#0E7490] text-center text-sm font-semibold mt-1"
             style={{ fontFamily: 'Nunito-SemiBold' }}
           >
-            Found {hits} of {totalRounds} tea leaves accurately!
+            Tap the fresh green tea leaf 🍃 when it appears in the garden.
           </Text>
+        </View>
 
-          <View className="flex-row gap-3 mt-6 w-full">
-            <View className="flex-1">
-              <Button
-                title="Play Again"
-                variant="primary"
-                size="large"
-                icon={<RefreshCw size={18} color="#FFFFFF" />}
-                onPress={initGame}
-              />
+        {/* Finished Summary or Active Garden Grid */}
+        {isFinished ? (
+          <View 
+            className="bg-white border-2 border-[#CCE7EF] rounded-[32px] p-7 items-center mb-6"
+            style={{
+              shadowColor: '#216174',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.1,
+              shadowRadius: 16,
+              elevation: 3,
+            }}
+          >
+            <View className="w-20 h-20 bg-[#FEF3C7] rounded-3xl items-center justify-center mb-3 border border-[#FDE68A]">
+              <Trophy size={42} color="#D97706" />
             </View>
-            <View className="flex-1">
-              <Button
-                title="Home"
-                variant="outline"
-                size="large"
-                onPress={() => router.replace('/(patient)/home')}
-              />
+
+            <Text 
+              className="text-3xl text-[#1E293B] font-bold text-center"
+              style={{ fontFamily: 'Nunito-Bold' }}
+            >
+              {t('well_done')}
+            </Text>
+
+            <Text 
+              className="text-[#64748B] text-base font-semibold mt-1"
+              style={{ fontFamily: 'Nunito-SemiBold' }}
+            >
+              Found {hits} of {totalRounds} tea leaves accurately!
+            </Text>
+
+            <View className="flex-row gap-3 mt-6 w-full">
+              <View className="flex-1">
+                <Button
+                  title={t('play_again')}
+                  variant="primary"
+                  size="large"
+                  icon={<RefreshCw size={16} color="#FFFFFF" />}
+                  onPress={initGame}
+                />
+              </View>
+              <View className="flex-1">
+                <Button
+                  title={t('return_home')}
+                  variant="outline"
+                  size="large"
+                  icon={<Home size={16} color="#475569" />}
+                  onPress={() => router.replace('/(patient)/home')}
+                />
+              </View>
             </View>
           </View>
-        </View>
-      ) : (
-        <View className="mb-6">
-          <View className="flex-row flex-wrap justify-between gap-y-3.5">
-            {gridItems.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                activeOpacity={0.75}
-                onPress={() => handleCellPress(item)}
-                style={{
-                  shadowColor: '#6B5E4F',
-                  shadowOffset: { width: 0, height: 3 },
-                  shadowOpacity: 0.06,
-                  shadowRadius: 8,
-                  elevation: 2,
-                }}
-                className={item.isTarget ? 'w-[48%] h-40 rounded-[28px] border-2 items-center justify-center bg-[#EBF4EE] border-[#4A7C59]' : 'w-[48%] h-40 rounded-[28px] border-2 items-center justify-center bg-white border-[#E8E2D8]'}
-              >
-                <Text className="text-5xl">{item.emoji}</Text>
-                <Text 
-                  className={`text-xl font-bold mt-2 ${item.isTarget ? 'text-[#2C503A]' : 'text-[#718096]'}`}
-                  style={{ fontFamily: 'Nunito-Bold' }}
+        ) : (
+          <View className="mb-6">
+            <View 
+              className="flex-row flex-wrap justify-between"
+              style={{ rowGap: 14 }}
+            >
+              {gridItems.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  activeOpacity={0.76}
+                  onPress={() => handleCellPress(item)}
+                  style={{
+                    width: '48%',
+                    height: 160,
+                    borderRadius: 26,
+                    borderWidth: 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: item.isTarget ? '#F0FDF4' : '#FFFFFF',
+                    borderColor: item.isTarget ? '#86EFAC' : '#EDE7DD',
+                    shadowColor: '#3A3226',
+                    shadowOffset: { width: 0, height: 3 },
+                    shadowOpacity: 0.06,
+                    shadowRadius: 8,
+                    elevation: 2,
+                  }}
                 >
-                  {item.isTarget ? 'Tea Leaf' : 'Butterfly'}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text className="text-5xl">{item.emoji}</Text>
+                  <Text 
+                    className="text-sm font-bold mt-2"
+                    style={{
+                      fontFamily: 'Nunito-Bold',
+                      color: item.isTarget ? '#166534' : '#64748B',
+                    }}
+                  >
+                    {item.isTarget ? 'Tea Leaf' : 'Butterfly'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {/* Voice Assistant */}
-      <View className="items-center">
-        <VoiceButton
-          textToSpeak="Find and tap the tea leaf as quickly as possible. Avoid the butterfly."
-          label={t('voice_assist')}
-        />
-      </View>
+        {/* Voice Assistant */}
+        <View className="items-center">
+          <VoiceButton
+            compact
+            textToSpeak="Find and tap the tea leaf as quickly as possible. Avoid the butterfly."
+            label={t('voice_assist')}
+          />
+        </View>
+      </ResponsiveContainer>
     </ScrollView>
   );
 }

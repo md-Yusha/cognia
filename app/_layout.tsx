@@ -47,28 +47,19 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <AppErrorBoundary>
-      <StressHost>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: '#FAF7F2' },
-          animation: 'fade',
-        }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)/login" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="(patient)/home" />
-        <Stack.Screen name="(patient)/games/memory_match" />
-        <Stack.Screen name="(patient)/games/daily_routine" />
-        <Stack.Screen name="(patient)/games/pattern_match" />
-        <Stack.Screen name="(patient)/games/focus_tap" />
-        <Stack.Screen name="(patient)/reminders" />
-        <Stack.Screen name="(patient)/chat" />
-        <Stack.Screen name="(caregiver)/dashboard" />
-        <Stack.Screen name="(caregiver)/chat/[id]" />
-        <Stack.Screen name="(caregiver)/patients/[id]" />
-      </Stack>
-      </StressHost>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: '#FAF7F2' },
+            animation: 'fade',
+          }}
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)/login" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="(caregiver)" />
+          <Stack.Screen name="(patient)" />
+        </Stack>
+        <StressHost />
       </AppErrorBoundary>
     </SafeAreaProvider>
   );

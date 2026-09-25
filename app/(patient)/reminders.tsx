@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Bell, CheckCircle, Volume2, Pill, Droplet, Calendar, Clock } from 'lucide-react-native';
+import { ArrowLeft, Bell, CheckCircle2, Volume2, Pill, Droplets, Calendar, Clock } from 'lucide-react-native';
 import { Button } from '../../src/components/ui/Button';
 import { VoiceButton } from '../../src/components/ui/VoiceButton';
+import { ResponsiveContainer } from '../../src/components/ui/ResponsiveContainer';
+import { Card } from '../../src/components/ui/Card';
 import { usePatientStore } from '../../src/store/usePatientStore';
 import { speakPrompt } from '../../src/services/ttsService';
 import * as Haptics from 'expo-haptics';
@@ -17,13 +19,13 @@ export default function PatientRemindersScreen() {
   const getIcon = (type: string) => {
     switch (type) {
       case 'medicine':
-        return <Pill size={28} color="#4A7C59" />;
+        return <Pill size={24} color="#16704A" />;
       case 'hydration':
-        return <Droplet size={28} color="#529DB1" />;
+        return <Droplets size={24} color="#0284C7" />;
       case 'appointment':
-        return <Calendar size={28} color="#836EA1" />;
+        return <Calendar size={24} color="#7C3AED" />;
       default:
-        return <Clock size={28} color="#C87453" />;
+        return <Clock size={24} color="#D96B27" />;
     }
   };
 
@@ -41,166 +43,205 @@ export default function PatientRemindersScreen() {
   return (
     <ScrollView 
       style={{ flex: 1, backgroundColor: '#FAF7F2' }} 
-      contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16, paddingBottom: 50 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 64 }}
     >
-      {/* Header */}
-      <View className="flex-row items-center justify-between pt-6 mb-4">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="flex-row items-center bg-white border border-[#E8E2D8] px-4 py-2 rounded-full shadow-sm"
-        >
-          <ArrowLeft size={16} color="#4A5568" />
-          <Text 
-            className="text-[#4A5568] font-bold ml-1.5 text-lg"
-            style={{ fontFamily: 'Nunito-Bold' }}
+      <ResponsiveContainer maxWidth="md">
+        {/* Header */}
+        <View className="flex-row items-center justify-between pt-4 mb-4">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.82}
+            className="flex-row items-center bg-white border border-[#CBD5E1] px-3.5 py-1.5 rounded-full"
+            style={{
+              shadowColor: '#000000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
           >
-            Back
-          </Text>
-        </TouchableOpacity>
-
-        <VoiceButton
-          textToSpeak="Here are your daily medicine and water reminders. Tap the green button when you take them."
-          label={t('voice_assist')}
-        />
-      </View>
-
-      {/* Title Card */}
-      <View 
-        className="bg-[#FDF3ED] border border-[#F4D8C9] rounded-[32px] p-6 mb-6"
-        style={{
-          shadowColor: '#8A4226',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          elevation: 2,
-        }}
-      >
-        <View className="flex-row items-center justify-center mb-1">
-          <Bell size={24} color="#864127" />
-          <Text 
-            className="text-4xl text-[#864127] ml-2"
-            style={{ fontFamily: 'PatrickHand' }}
-          >
-            {t('reminders_title')}
-          </Text>
-        </View>
-        <Text 
-          className="text-[#A95838] text-center text-xl font-semibold mt-1"
-          style={{ fontFamily: 'Nunito-SemiBold' }}
-        >
-          Daily care schedule set by your caregiver.
-        </Text>
-      </View>
-
-      {/* Reminders List */}
-      <View className="gap-3.5 mb-6">
-        {reminders.length === 0 ? (
-          <View 
-            className="bg-white border border-[#EFEBE4] p-8 rounded-[32px] items-center text-center shadow-sm"
-          >
-            <Text className="text-4xl mb-2">🌸</Text>
+            <ArrowLeft size={15} color="#475569" />
             <Text 
-              className="text-4xl text-[#2B3A30] text-center"
-              style={{ fontFamily: 'PatrickHand' }}
+              className="text-[#475569] font-bold ml-1.5 text-sm"
+              style={{ fontFamily: 'Nunito-Bold' }}
             >
-              All Caught Up!
+              {t('back')}
             </Text>
+          </TouchableOpacity>
+
+          <VoiceButton
+            compact
+            textToSpeak={t('reminders_subtitle')}
+            label={t('voice_help')}
+          />
+        </View>
+
+        {/* Title Card */}
+        <View 
+          className="bg-[#FFF8F3] border-2 border-[#FBDCC8] rounded-[28px] p-5 mb-5"
+          style={{
+            shadowColor: '#9A431D',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.07,
+            shadowRadius: 10,
+            elevation: 2,
+          }}
+        >
+          <View className="flex-row items-center justify-center mb-1">
+            <Bell size={20} color="#D96B27" />
             <Text 
-              className="text-[#597362] text-xl text-center mt-1"
-              style={{ fontFamily: 'Nunito-SemiBold' }}
+              className="text-2xl text-[#9A431D] font-bold ml-2"
+              style={{ fontFamily: 'Nunito-Bold' }}
             >
-              You have no pending medicine or water reminders for right now.
+              {t('reminders_title')}
             </Text>
           </View>
-        ) : (
-          reminders.map((rem) => {
-            const isDoneToday = !!rem.lastAcknowledgedAt;
+          <Text 
+            className="text-[#B95217] text-center text-sm font-semibold mt-1"
+            style={{ fontFamily: 'Nunito-SemiBold' }}
+          >
+            {t('reminders_subtitle')}
+          </Text>
+        </View>
 
-          return (
-            <View
-              key={rem.id}
-              className={isDoneToday ? 'p-6 rounded-3xl border bg-[#EBF4EE] border-[#CDE3D5]' : 'p-6 rounded-3xl border bg-white border-[#EFEBE4]'}
+        {/* Reminders List */}
+        <View className="gap-3.5 mb-6">
+          {reminders.length === 0 ? (
+            <View 
+              className="bg-white border-2 border-[#EDE7DD] p-8 rounded-[30px] items-center text-center"
               style={{
-                shadowColor: '#7A6855',
-                shadowOffset: { width: 0, height: 3 },
+                shadowColor: '#000000',
+                shadowOffset: { width: 0, height: 1 },
                 shadowOpacity: 0.05,
-                shadowRadius: 8,
-                elevation: 2,
+                shadowRadius: 2,
+                elevation: 1,
               }}
             >
-              <View className="flex-row items-start justify-between mb-3">
-                <View className="flex-row items-center flex-1">
-                  <View className="w-14 h-14 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D8] items-center justify-center mr-3">
-                    {getIcon(rem.type)}
-                  </View>
-                  <View className="flex-1">
-                    <Text 
-                      className={`text-2xl font-bold ${isDoneToday ? 'text-[#2C503A]' : 'text-[#2D3748]'}`}
-                      style={{ fontFamily: 'Nunito-Bold' }}
-                    >
-                      {rem.title}
-                    </Text>
-                    <Text 
-                      className="text-[#C87453] font-bold text-xl mt-0.5"
-                      style={{ fontFamily: 'Nunito-Bold' }}
-                    >
-                      ⏰ {rem.time}
-                    </Text>
-                  </View>
-                </View>
-
-                <TouchableOpacity
-                  onPress={() => speakPrompt(`${rem.title}. ${rem.dosageOrDetails}`, (i18n.language || 'en') as any)}
-                  className="p-2.5 bg-[#FAF8F5] rounded-full border border-[#E8E2D8]"
-                >
-                  <Volume2 size={20} color="#64748B" />
-                </TouchableOpacity>
-              </View>
-
-              {rem.dosageOrDetails && (
-                <Text 
-                  className={isDoneToday ? 'text-xl mb-4 p-3.5 rounded-2xl bg-white/80 text-[#2C503A]' : 'text-xl mb-4 p-3.5 rounded-2xl bg-[#FAF8F5] text-[#4A5568] border border-[#EFEBE4]'}
-                  style={{ fontFamily: 'Nunito-SemiBold' }}
-                >
-                  {rem.dosageOrDetails}
-                </Text>
-              )}
-
-              {isDoneToday ? (
-                <View className="flex-row items-center justify-center bg-white border border-[#CDE3D5] py-3 rounded-full">
-                  <CheckCircle size={18} color="#4A7C59" />
-                  <Text 
-                    className="text-[#2C503A] font-bold text-xl ml-2"
-                    style={{ fontFamily: 'Nunito-Bold' }}
-                  >
-                    Completed for Today
-                  </Text>
-                </View>
-              ) : (
-                <View className="flex-row gap-3">
-                  <View className="flex-1">
-                    <Button
-                      title={t('acknowledge')}
-                      variant="primary"
-                      size="large"
-                      icon={<CheckCircle size={18} color="#FFFFFF" />}
-                      onPress={() => handleDone(rem.id, rem.title)}
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <Button
-                      title="Snooze"
-                      variant="outline"
-                      size="large"
-                      onPress={() => handleSnooze(rem.title)}
-                    />
-                  </View>
-                </View>
-              )}
+              <Text className="text-4xl mb-2">🌸</Text>
+              <Text 
+                className="text-2xl text-[#1E293B] font-bold text-center"
+                style={{ fontFamily: 'Nunito-Bold' }}
+              >
+                {t('all_caught_up')}
+              </Text>
+              <Text 
+                className="text-[#64748B] text-sm text-center mt-1 font-semibold"
+                style={{ fontFamily: 'Nunito-SemiBold' }}
+              >
+                {t('no_pending_reminders')}
+              </Text>
             </View>
-          );
-        }))}
-      </View>
+          ) : (
+            reminders.map((rem) => {
+              const isDoneToday = !!rem.lastAcknowledgedAt;
+
+              return (
+                <View
+                  key={rem.id}
+                  className={`p-5 rounded-[26px] border-2 ${
+                    isDoneToday 
+                      ? 'bg-[#F0FDF4] border-[#BBF7D0]' 
+                      : 'bg-white border-[#EDE7DD]'
+                  }`}
+                  style={{
+                    shadowColor: '#3A3226',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 8,
+                    elevation: 1,
+                  }}
+                >
+                  <View className="flex-row items-start justify-between mb-3">
+                    <View className="flex-row items-center flex-1 mr-2">
+                      <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-3 border ${
+                        isDoneToday ? 'bg-white border-[#86EFAC]' : 'bg-[#FAF8F5] border-[#CBD5E1]'
+                      }`}>
+                        {getIcon(rem.type)}
+                      </View>
+                      <View className="flex-1">
+                        <Text 
+                          className={`text-lg font-bold ${isDoneToday ? 'text-[#166534]' : 'text-[#1E293B]'}`}
+                          style={{ fontFamily: 'Nunito-Bold' }}
+                        >
+                          {rem.title}
+                        </Text>
+                        <Text 
+                          className="text-[#D96B27] font-bold text-sm mt-0.5"
+                          style={{ fontFamily: 'Nunito-Bold' }}
+                        >
+                          ⏰ {rem.time}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={() => speakPrompt(`${rem.title}. ${rem.dosageOrDetails}`, (i18n.language || 'en') as any)}
+                      className="w-9 h-9 bg-[#FAF8F5] rounded-full border border-[#CBD5E1] items-center justify-center"
+                    >
+                      <Volume2 size={16} color="#64748B" />
+                    </TouchableOpacity>
+                  </View>
+
+                  {rem.dosageOrDetails ? (
+                    <Text 
+                      className={`text-sm mb-4 p-3 rounded-xl ${
+                        isDoneToday 
+                          ? 'bg-white/80 text-[#166534] font-semibold' 
+                          : 'bg-[#FAF8F5] text-[#475569] border border-[#E2DDD5] font-semibold'
+                      }`}
+                      style={{ fontFamily: 'Nunito-SemiBold' }}
+                    >
+                      {rem.dosageOrDetails}
+                    </Text>
+                  ) : null}
+
+                  {isDoneToday ? (
+                    <View className="flex-row items-center justify-center bg-white border border-[#86EFAC] py-2.5 rounded-full">
+                      <CheckCircle2 size={16} color="#16704A" />
+                      <Text 
+                        className="text-[#16704A] font-bold text-sm ml-1.5"
+                        style={{ fontFamily: 'Nunito-Bold' }}
+                      >
+                        {t('done')}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View className="flex-row gap-2.5">
+                      <TouchableOpacity
+                        onPress={() => handleDone(rem.id, rem.title)}
+                        activeOpacity={0.84}
+                        className="flex-1 bg-[#16704A] py-3 rounded-xl items-center justify-center flex-row"
+                        style={{
+                          shadowColor: '#16704A',
+                          shadowOffset: { width: 0, height: 1 },
+                          shadowOpacity: 0.15,
+                          shadowRadius: 3,
+                          elevation: 1,
+                        }}
+                      >
+                        <CheckCircle2 size={16} color="#FFFFFF" />
+                        <Text className="text-white font-bold ml-1.5 text-base" style={{ fontFamily: 'Nunito-Bold' }}>
+                          {t('i_took_it')}
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={() => handleSnooze(rem.title)}
+                        activeOpacity={0.8}
+                        className="px-4 py-3 bg-[#FAF8F5] border border-[#CBD5E1] rounded-xl items-center justify-center"
+                      >
+                        <Text className="text-[#64748B] font-bold text-sm" style={{ fontFamily: 'Nunito-Bold' }}>
+                          {t('remind_later')}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              );
+            })
+          )}
+        </View>
+      </ResponsiveContainer>
     </ScrollView>
   );
 }

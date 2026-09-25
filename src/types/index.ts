@@ -4,9 +4,12 @@ export type CognitiveGameType =
   | 'memory_match'           // Rhino Memory Match (Visual & Spatial)
   | 'daily_routine_recall'   // NER Daily Routine Recall (Sequencing)
   | 'pattern_recognition'    // Bamboo Pattern Recognition (Working Memory)
-  | 'focus_tap';             // Tea Garden Focus & Tap (Attention & Speed)
+  | 'focus_tap'              // Tea Garden Focus & Tap (Attention & Speed)
+  | 'reminiscence_match';    // Family Memory Album & Recall (Emotional & Long-term Recall)
 
 export type DifficultyTier = 'easy' | 'medium' | 'hard';
+
+export type CaregiverRole = 'family' | 'clinical';
 
 export interface CaregiverProfile {
   uid: string;
@@ -14,8 +17,41 @@ export interface CaregiverProfile {
   email?: string;
   phone?: string;
   photoURL?: string;
+  role?: CaregiverRole;
   createdAt: number;
   patientIds: string[];
+}
+
+export interface FamilyMemoryItem {
+  id: string;
+  patientId: string;
+  title: string;          // e.g. "Granddaughter Priya"
+  relationship: string;   // e.g. "Granddaughter", "Family Home", "Spouse"
+  imageUrl?: string;      // Photo URL or asset preset
+  clue: string;           // e.g. "She loves singing Bihu songs with you on festival days."
+  dateYear?: string;      // e.g. "2023"
+  createdAt: number;
+}
+
+export interface ClinicalAiAssessment {
+  cognitiveStabilityIndex: number; // 0 to 100
+  trend: 'improving' | 'stable' | 'declining';
+  sundowningRisk: 'low' | 'moderate' | 'high';
+  reactionTimeAvgMs: number;
+  adherenceRate: number; // 0 to 100%
+  summaryHeadline: string;
+  clinicalObservations: string[];
+  actionableRecommendations: string[];
+  generatedAt: number;
+}
+
+export interface FamilyCaregiverContact {
+  uid: string;
+  name: string;
+  email: string;
+  phone: string;
+  relationship?: string;
+  registeredAt: number;
 }
 
 export interface PatientProfile {
@@ -27,9 +63,17 @@ export interface PatientProfile {
   preferredLanguage: LanguageCode;
   accessCode: string;
   dementiaStage?: 'mild' | 'moderate' | 'early';
+  city?: string;
+  latitude?: number;
+  longitude?: number;
+  locationAddress?: string;
   createdAt: number;
   lastActive?: number;
-  difficultyLevels: Record<CognitiveGameType, DifficultyTier>;
+  notes?: string;
+  emergencyContact?: string;
+  familyCaregivers?: FamilyCaregiverContact[];
+  familyCaregiverIds?: string[];
+  difficultyLevels: Partial<Record<CognitiveGameType, DifficultyTier>> & Record<'memory_match' | 'daily_routine_recall' | 'pattern_recognition' | 'focus_tap', DifficultyTier>;
 }
 
 export interface PatientCodeMapping {
