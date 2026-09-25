@@ -11,6 +11,7 @@ import {
   Heart,
   Mic,
 } from 'lucide-react-native';
+import { CalmDay } from '../../src/components/CalmDay';
 import { VoiceButton } from '../../src/components/ui/VoiceButton';
 import { VoiceAnswerModal } from '../../src/components/ui/VoiceAnswerModal';
 import { ResponsiveContainer } from '../../src/components/ui/ResponsiveContainer';
@@ -169,6 +170,8 @@ export default function PatientHomeScreen() {
             </View>
           </View>
         </View>
+
+        <CalmDay patientName={patientName} />
 
         {/* Daily Hydration Pill (Compact) */}
         <View 

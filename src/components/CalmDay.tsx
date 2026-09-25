@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View, Vibration } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { speakPrompt } from '../services/ttsService';
+import { getCurrentLiveLocation } from '../services/locationService';
 import { CheckCircle2, Droplets, Sun, Moon, Home } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -24,6 +25,8 @@ function dayPart(date = new Date()) {
 export function CalmDay({ patientName }: { patientName: string }) {
   const clock = dayPart();
   const [waterDone, setWaterDone] = useState(false);
+  const [placeName, setPlaceName] = useState('Finding where you are');
+  const [sosOn, setSosOn] = useState(false);
   const waterKey = `cognia_water_${new Date().toDateString()}`;
 
   useEffect(() => {
@@ -31,14 +34,24 @@ export function CalmDay({ patientName }: { patientName: string }) {
   }, [waterKey]);
 
   useEffect(() => {
-    if (!clock.dusk) return;
-    const key = `cognia_dusk_${new Date().toDateString()}`;
-    AsyncStorage.getItem(key).then((value) => {
-      if (value) return;
-      AsyncStorage.setItem(key, '1');
-      speakPrompt(`Good evening ${patientName}. You are safe at home. ${clock.meal}`);
-    });
-  }, [clock.dusk, clock.meal, patientName]);
+    let cancelled = false;
+    getCurrentLiveLocation()
+      .then((location) => {
+        if (cancelled) return;
+        const name = location.suburb
+          ? `${location.suburb}, ${location.city}`
+          : location.address || location.city;
+        setPlaceName(name);
+        const line = `You are in ${name}. It is ${clock.day} ${clock.when}. ${clock.meal}`;
+        speakPrompt(`${patientName}. ${line}`);
+      })
+      .catch(() => {
+        if (!cancelled) setPlaceName('Home');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [clock.day, clock.meal, clock.when, patientName]);
 
   const markWater = async () => {
     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
@@ -72,7 +85,7 @@ export function CalmDay({ patientName }: { patientName: string }) {
             }`}
             style={{ fontFamily: 'Nunito-Bold' }}
           >
-            You are safe at home
+            You are in {placeName}
           </Text>
           <Text 
             className={`text-lg text-center mt-1 font-semibold ${
@@ -83,6 +96,22 @@ export function CalmDay({ patientName }: { patientName: string }) {
             It is {clock.day} {clock.when}. {clock.meal}
           </Text>
         </View>
+        <TouchableOpacity
+          onPress={() => {
+            setSosOn(true);
+            Vibration.vibrate([0, 700, 250, 700], true);
+            speakPrompt(`I need help. I am in ${placeName}. ${clock.meal}`);
+            setTimeout(() => {
+              setSosOn(false);
+              Vibration.cancel();
+            }, 8000);
+          }}
+          className="mt-3 bg-[#9A3412] rounded-full py-3 items-center"
+        >
+          <Text className="text-white text-lg font-bold" style={{ fontFamily: 'Nunito-Bold' }}>
+            {sosOn ? 'Calling for help' : 'I need help'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Everyday Objects Recognition Bar */}

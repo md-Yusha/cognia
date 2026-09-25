@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Text, View, TouchableOpacity } from 'react-native';
+import { Modal, Text, View, TouchableOpacity, Vibration } from 'react-native';
 import { usePatientStore } from '../store/usePatientStore';
 import { postStressAlert } from '../services/careApi';
 import { recordScreenTouch, reassuranceLine, startStressWatch, StressReading } from '../services/stressMonitor';
@@ -10,6 +10,17 @@ import * as Haptics from 'expo-haptics';
 export function StressHost({ children }: { children?: React.ReactNode }) {
   const patient = usePatientStore((state) => state.patient);
   const [reading, setReading] = useState<StressReading | null>(null);
+
+  useEffect(() => {
+    if (!reading) {
+      Vibration.cancel();
+      return;
+    }
+    Vibration.vibrate([0, 600, 200, 600, 200, 900], true);
+    return () => {
+      Vibration.cancel();
+    };
+  }, [reading]);
 
   useEffect(() => {
     if (!patient) return;
@@ -54,7 +65,7 @@ export function StressHost({ children }: { children?: React.ReactNode }) {
     <>
       {children}
       <Modal visible={!!reading} transparent animationType="fade">
-        <View className="flex-1 bg-black/60 justify-center items-center p-6">
+        <View className="flex-1 justify-center items-center p-6" style={{ backgroundColor: 'rgba(0,0,0,0.72)' }}>
           <View 
             className="w-full max-w-sm bg-[#FAF8F5] rounded-[32px] p-7 items-center border-2 border-[#CCEAD7]"
             style={{
